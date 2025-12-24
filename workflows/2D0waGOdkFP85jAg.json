@@ -1,0 +1,810 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-22T12:09:48.518Z",
+    "createdAt": "2025-12-22T12:06:58.126Z",
+    "versionId": "08f21bb2-c1d3-4652-bcc8-c947de03b1f0",
+    "workflowId": "2D0waGOdkFP85jAg",
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          128,
+          288
+        ],
+        "id": "d8cd5b00-8d3a-4798-a90b-6b38965b5426",
+        "name": "trigger"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://genaipro.vn/api/v1/labs/task",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"input\": {{ JSON.stringify($json['Chunk Script']) }},\n  \"voice_id\": \"your-elevenlabs-voice-id\",\n  \"model_id\": \"eleven_multilingual_v2\",\n  \"style\": 0.4,\n  \"speed\": 0.95,\n  \"use_speaker_boost\": true,\n  \"similarity\": 0.6,\n  \"stability\": 0.7\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          352,
+          -16
+        ],
+        "id": "88bdf28f-98ea-4b9e-ad01-b44a5f13d3ef",
+        "name": "Generate Voiceover w/ \"GenAIPro.vn\""
+      },
+      {
+        "parameters": {
+          "amount": 30
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          576,
+          -16
+        ],
+        "id": "1fcc3722-6859-4087-a992-42affb9c25fc",
+        "name": "Wait 30 Sec",
+        "webhookId": "81ad450a-324f-425c-8157-ee418d12dcd5"
+      },
+      {
+        "parameters": {
+          "url": "=https://genaipro.vn/api/v1/labs/task/{{ $('Generate Voiceover w/ \"GenAIPro.vn\"').first().json.task_id }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          800,
+          -80
+        ],
+        "id": "8bb8620f-1c1b-4dcc-a502-533f7d472343",
+        "name": "Check Status"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.status }}",
+                      "rightValue": "completed",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "ffc3f619-25eb-4189-b8eb-a1f3f26ff507"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "completed"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "2a5d39eb-e4b2-4ca2-9dea-af7f856e2603",
+                      "leftValue": "={{ $json.status }}",
+                      "rightValue": "processing",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "processing"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          1024,
+          -16
+        ],
+        "id": "a9c05958-7da6-42d8-bac1-dfcaf814d0b2",
+        "name": "Finished? -> Download / Processing? -> Wait"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.result }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1216,
+          -32
+        ],
+        "id": "0b85daa7-1fa1-4459-9f3a-412cf3531f58",
+        "name": "Download Voiceover Chunk"
+      },
+      {
+        "parameters": {
+          "operation": "upload",
+          "bucketName": "={{ $('trigger').first().json['Storage Bucket'] }}",
+          "fileName": "={{ $('trigger').first().json['Videos Folder Path'] }}/{{ $('trigger').first().json['Project Name'] }}/voiceover/audio-chunk-{{ $('trigger').first().json['Chunk Number'] }}.mp3",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          1472,
+          240
+        ],
+        "id": "a9b2ebb7-80dc-4c2b-942b-ba7bc561ade2",
+        "name": "Upload Chunk to Project",
+        "credentials": {
+          "s3": {
+            "id": "K3Ji1vSaw4y5ofv7",
+            "name": "German Family Drama - S3 account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Generate Voiceover Chunk",
+          "height": 864,
+          "width": 1264,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          96,
+          -128
+        ],
+        "id": "8e1505cf-70e0-4be0-a548-467405c23a44",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Upload Chunk to Project",
+          "height": 240,
+          "width": 480,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1408,
+          176
+        ],
+        "id": "2ead5b8a-e975-4c1e-b307-29392b99cde6",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "update",
+          "workspaceId": "wtu1usuc",
+          "projectId": "={{ $('trigger').first().json['Channel Base Name'] }}",
+          "table": "={{ $('trigger').first().json['Worker Table Name'] }}",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "=Id",
+                "fieldValue": "={{ $('trigger').first().json.Id }}"
+              },
+              {
+                "fieldName": "Worker Status",
+                "fieldValue": "Ready"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          1696,
+          240
+        ],
+        "id": "5831ff6f-cf5b-4a5e-8ee9-04bb90f0bd69",
+        "name": "Change Worker Status to \"Ready\"",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "JoY3JTA7ut2SRv1l",
+            "name": "German Family Drama - NocoDB"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://cors.uiisp.top?https://abhibots.com/api.php",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "origin",
+                "value": "https://abhibots.commm"
+              },
+              {
+                "name": "referer",
+                "value": "https://abhibots.com/ttsmm"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "text",
+                "value": "={{ JSON.stringify($json['Chunk Script']) }}"
+              },
+              {
+                "name": "voice",
+                "value": "21m00Tcm4TlvDq8ikWAM"
+              },
+              {
+                "name": "provider",
+                "value": "eleven"
+              },
+              {
+                "name": "tg_user",
+                "value": "{\"id\":1469928442,\"first_name\":\"Abhiraj\",\"username\":\"1469928442\",\"auth_via\":\"key\",\"is_premium\":true,\"is_group_member\":true,\"is_channel_member\":true}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          688,
+          368
+        ],
+        "id": "f7eeec9d-aa07-42c0-8f9d-97da0eff66df",
+        "name": "Generate Voiceover w/ \"GenAIPro.vn\"2"
+      }
+    ],
+    "connections": {
+      "trigger": {
+        "main": [
+          [
+            {
+              "node": "Generate Voiceover w/ \"GenAIPro.vn\"2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Voiceover w/ \"GenAIPro.vn\"": {
+        "main": [
+          [
+            {
+              "node": "Wait 30 Sec",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait 30 Sec": {
+        "main": [
+          [
+            {
+              "node": "Check Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Status": {
+        "main": [
+          [
+            {
+              "node": "Finished? -> Download / Processing? -> Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Finished? -> Download / Processing? -> Wait": {
+        "main": [
+          [
+            {
+              "node": "Download Voiceover Chunk",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait 30 Sec",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Voiceover Chunk": {
+        "main": [
+          []
+        ]
+      },
+      "Upload Chunk to Project": {
+        "main": [
+          [
+            {
+              "node": "Change Worker Status to \"Ready\"",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Voiceover w/ \"GenAIPro.vn\"2": {
+        "main": [
+          [
+            {
+              "node": "Upload Chunk to Project",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "taha bouras",
+    "name": "Version 08f21bb2",
+    "description": ""
+  },
+  "activeVersionId": "08f21bb2-c1d3-4652-bcc8-c947de03b1f0",
+  "connections": {
+    "trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate Voiceover w/ \"GenAIPro.vn\"2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Voiceover w/ \"GenAIPro.vn\"": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 Sec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 Sec": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Finished? -> Download / Processing? -> Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finished? -> Download / Processing? -> Wait": {
+      "main": [
+        [
+          {
+            "node": "Download Voiceover Chunk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 30 Sec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Voiceover Chunk": {
+      "main": [
+        []
+      ]
+    },
+    "Upload Chunk to Project": {
+      "main": [
+        [
+          {
+            "node": "Change Worker Status to \"Ready\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Voiceover w/ \"GenAIPro.vn\"2": {
+      "main": [
+        [
+          {
+            "node": "Upload Chunk to Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-21T11:12:44.649Z",
+  "id": "2D0waGOdkFP85jAg",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Voiceover Chunk Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        288
+      ],
+      "id": "d8cd5b00-8d3a-4798-a90b-6b38965b5426",
+      "name": "trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://genaipro.vn/api/v1/labs/task",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": {{ JSON.stringify($json['Chunk Script']) }},\n  \"voice_id\": \"your-elevenlabs-voice-id\",\n  \"model_id\": \"eleven_multilingual_v2\",\n  \"style\": 0.4,\n  \"speed\": 0.95,\n  \"use_speaker_boost\": true,\n  \"similarity\": 0.6,\n  \"stability\": 0.7\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        352,
+        -16
+      ],
+      "id": "88bdf28f-98ea-4b9e-ad01-b44a5f13d3ef",
+      "name": "Generate Voiceover w/ \"GenAIPro.vn\""
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        576,
+        -16
+      ],
+      "id": "1fcc3722-6859-4087-a992-42affb9c25fc",
+      "name": "Wait 30 Sec",
+      "webhookId": "81ad450a-324f-425c-8157-ee418d12dcd5"
+    },
+    {
+      "parameters": {
+        "url": "=https://genaipro.vn/api/v1/labs/task/{{ $('Generate Voiceover w/ \"GenAIPro.vn\"').first().json.task_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        -80
+      ],
+      "id": "8bb8620f-1c1b-4dcc-a502-533f7d472343",
+      "name": "Check Status"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ffc3f619-25eb-4189-b8eb-a1f3f26ff507"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "completed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2a5d39eb-e4b2-4ca2-9dea-af7f856e2603",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "processing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "processing"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1024,
+        -16
+      ],
+      "id": "a9c05958-7da6-42d8-bac1-dfcaf814d0b2",
+      "name": "Finished? -> Download / Processing? -> Wait"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.result }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1216,
+        -32
+      ],
+      "id": "0b85daa7-1fa1-4459-9f3a-412cf3531f58",
+      "name": "Download Voiceover Chunk"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "={{ $('trigger').first().json['Storage Bucket'] }}",
+        "fileName": "={{ $('trigger').first().json['Videos Folder Path'] }}/{{ $('trigger').first().json['Project Name'] }}/voiceover/audio-chunk-{{ $('trigger').first().json['Chunk Number'] }}.mp3",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        240
+      ],
+      "id": "a9b2ebb7-80dc-4c2b-942b-ba7bc561ade2",
+      "name": "Upload Chunk to Project",
+      "credentials": {
+        "s3": {
+          "id": "K3Ji1vSaw4y5ofv7",
+          "name": "German Family Drama - S3 account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Generate Voiceover Chunk",
+        "height": 864,
+        "width": 1264,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -128
+      ],
+      "id": "8e1505cf-70e0-4be0-a548-467405c23a44",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Upload Chunk to Project",
+        "height": 240,
+        "width": 480,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        176
+      ],
+      "id": "2ead5b8a-e975-4c1e-b307-29392b99cde6",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "workspaceId": "wtu1usuc",
+        "projectId": "={{ $('trigger').first().json['Channel Base Name'] }}",
+        "table": "={{ $('trigger').first().json['Worker Table Name'] }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "=Id",
+              "fieldValue": "={{ $('trigger').first().json.Id }}"
+            },
+            {
+              "fieldName": "Worker Status",
+              "fieldValue": "Ready"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        1696,
+        240
+      ],
+      "id": "5831ff6f-cf5b-4a5e-8ee9-04bb90f0bd69",
+      "name": "Change Worker Status to \"Ready\"",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "JoY3JTA7ut2SRv1l",
+          "name": "German Family Drama - NocoDB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cors.uiisp.top?https://abhibots.com/api.php",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "origin",
+              "value": "https://abhibots.commm"
+            },
+            {
+              "name": "referer",
+              "value": "https://abhibots.com/ttsmm"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ JSON.stringify($json['Chunk Script']) }}"
+            },
+            {
+              "name": "voice",
+              "value": "21m00Tcm4TlvDq8ikWAM"
+            },
+            {
+              "name": "provider",
+              "value": "eleven"
+            },
+            {
+              "name": "tg_user",
+              "value": "{\"id\":1469928442,\"first_name\":\"Abhiraj\",\"username\":\"1469928442\",\"auth_via\":\"key\",\"is_premium\":true,\"is_group_member\":true,\"is_channel_member\":true}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        368
+      ],
+      "id": "f7eeec9d-aa07-42c0-8f9d-97da0eff66df",
+      "name": "Generate Voiceover w/ \"GenAIPro.vn\"2"
+    }
+  ],
+  "pinData": {
+    "trigger": [
+      {
+        "json": {
+          "Chunk Number": "4",
+          "Chunk Script": "\"Das Kästchen hat jetzt keine Priorität!\", brüllte Ernst zurück, während er sich durch die Trümmer kämpfte, die sich wie ein Mahnmal um mich auftürmten. Ich konnte seine Entschlossenheit sehen, er war fast bei mir. Endlich erreichte er mich, packte mich fest am Arm und zog mich entschlossen weg, von den Trümmern, aus der Gefahr. Kaum war ich von meinem Platz weg, stürzte der bedrohliche Balken über meiner ehemaligen Position mit einem ohrenbetäubenden Krachen herab. Staub wirbelte erneut auf, und ein kleines Stück der Wand gab nach, legte den Blick auf den Garten frei. Frischluft! Ich sog sie gierig ein. Wir waren gerettet, aber das Haus war ein Wrack. Mein Zuhause.\n\nAußer Atem stand ich nun draußen im Garten, Ella umarmte mich fest. Ich spürte ihre Tränen auf meiner Schulter. \"Mama, Gott sei Dank! Was machst du denn in diesem Schrotthaufen?\", sagte sie, ihre Stimme immer noch zitternd.\n\nIch, immer noch blass, aber mit einem Funken meiner gewohnten Sturheit in den Augen, riss mich von ihr los. \"Mein Haus ist kein Schrotthaufen!\", sagte ich mit fester Stimme, obwohl meine Beine noch zitterten. \"Und mein Kästchen! Wir müssen das Kästchen holen! Es ist unter den Trümmern, direkt hinter dem Kamin, da muss es noch sein!\"\n\nErnst seufzte tief und wischte sich den Staub aus dem Gesicht, seine Haare waren ganz grau davon. ",
+          "Id": "4",
+          "Worker Table Name": "m0jfpnipilf8qr7",
+          "Channel Base Name": "p7903f0ck8ocsqt",
+          "Storage Bucket": "n8nt",
+          "Videos Folder Path": "german/family-drama/videos",
+          "Project Name": "unlock-your-inner-potential-a-journey"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-21T11:12:44.649Z",
+      "createdAt": "2025-12-21T11:12:44.649Z",
+      "role": "workflow:owner",
+      "workflowId": "2D0waGOdkFP85jAg",
+      "projectId": "Sz2vPJqZDAwEzZJp"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-12-22T12:06:58.020Z",
+  "versionId": "08f21bb2-c1d3-4652-bcc8-c947de03b1f0"
+}
