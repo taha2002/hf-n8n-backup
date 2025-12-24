@@ -1,0 +1,1170 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-22T16:26:45.573Z",
+    "createdAt": "2025-12-22T16:26:37.319Z",
+    "versionId": "9062f30d-e4a8-46c0-bd23-db1edb5e0892",
+    "workflowId": "ohiEdp8uyihJp8lg",
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -1952,
+          -64
+        ],
+        "id": "451376e1-b0d0-434b-87e1-13772cf521c5",
+        "name": "trigger"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('Output Random Number').first().json.randomNumber }}",
+          "contextWindowLength": 4
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -160,
+          288
+        ],
+        "id": "3b34b525-f598-4643-806e-cc411f277915",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -448,
+          -64
+        ],
+        "id": "12646dd9-ed67-4d49-b437-1bb38fe6504e",
+        "name": "Loop over Chapters"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "e469bf15-f2af-4fa9-a7b8-2fc04931078e",
+                "name": "Script",
+                "value": "={{ $('Merge Chapters to Final Script').first().json.Script }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          288,
+          -176
+        ],
+        "id": "b96cf0c8-a433-46a2-bc5e-155de6e8632f",
+        "name": "Output Script"
+      },
+      {
+        "parameters": {
+          "jsCode": "/**\n * n8n Code Node: Generate a random number between 1 and 1000.\n *\n * This code generates a single item containing a JSON object.\n * The object has one key, \"randomNumber\", with a value that is a\n * random integer between 1 and 1000 (inclusive).\n *\n * How to use:\n * 1. Add a \"Code\" node to your n8n workflow.\n * 2. Copy and paste this entire code block into the JavaScript editor of the node.\n * 3. Execute the node.\n *\n * The output will be a single item like this:\n * {\n * \"json\": {\n * \"randomNumber\": 523 // (or any other random number)\n * }\n * }\n */\n\n// Generate a random integer between 1 and 1000.\nconst randomNumber = Math.floor(Math.random() * 1000) + 1;\n\n// n8n expects an array of items to be returned.\n// We'll create one item which contains our random number.\nconst newItem = {\n  json: {\n    randomNumber: randomNumber\n  }\n};\n\n// Return the new item in the expected array format.\nreturn [newItem];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1792,
+          -64
+        ],
+        "id": "c671f957-afd8-43ce-a55d-9a447f2f63ad",
+        "name": "Output Random Number"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=# Story:\n\n{{ $('trigger').first().json.Transcript }}",
+          "options": {
+            "systemMessage": "=Divide the full Story below into 3 chapters following the three-act structure. Crucially, the story must begin in medias res. Therefore, Chapter 1 must start directly within the main confrontation. The key events for Chapter 1 should reflect this. For every chapter, list the 2 key events. Also give a general story overview.\n\nReally emphasize on the hook of the story. The key sentences and events from the hook (often First 5-10 Sentences) must be included!"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          -1616,
+          -64
+        ],
+        "id": "d90974cf-539d-415d-aa8e-2d26dcf703f2",
+        "name": "Output 3-Act-Structure from Transcript",
+        "retryOnFail": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const youngFemaleNames = [\n  \"Anna\", \"Julia\", \"Sarah\", \"Laura\", \"Lea\", \"Hannah\", \"Lena\", \"Mia\", \"Emma\", \"Sophia\",\n  \"Emilia\", \"Lina\", \"Mila\", \"Leonie\", \"Johanna\", \"Marie\", \"Lisa\", \"Amelie\", \"Ella\", \"Clara\",\n  \"Luisa\", \"Lara\", \"Nele\", \"Pauline\", \"Greta\", \"Ida\", \"Frieda\", \"Maja\", \"Alma\", \"Matilda\",\n  \"Theresa\", \"Sofia\", \"Jennifer\", \"Stefanie\", \"Melanie\", \"Nicole\", \"Sabrina\", \"Christina\", \"Jessica\", \"Michelle\",\n  \"Yvonne\", \"Nadine\", \"Anja\", \"Katrin\", \"Daniela\", \"Sandra\", \"Katharina\", \"Franziska\", \"Sabine\", \"Claudia\"\n];\nconst oldFemaleNames = [\n  \"Brigitte\", \"Renate\", \"Karin\", \"Angelika\", \"Gabriele\", \"Gisela\", \"Ursula\", \"Helga\", \"Ingrid\", \"Christa\",\n  \"Sabine\", \"Susanne\", \"Petra\", \"Birgit\", \"Claudia\", \"Andrea\", \"Heike\", \"Bettina\", \"Martina\", \"Angela\",\n  \"Elfriede\", \"Heidrun\", \"Annette\", \"Monika\", \"Ilse\", \"Edith\", \"Hedwig\", \"Marianne\", \"Gerda\", \"Gertrude\",\n  \"Edeltraud\", \"Elsa\", \"Else\", \"Caroline\", \"Charlotte\", \"Jutta\", \"Waltraud\", \"Cornelia\", \"Tanja\", \"Kerstin\",\n  \"Ute\", \"Sigrid\", \"Rosemarie\", \"Hannelore\", \"Erika\", \"Margot\", \"Hildegard\", \"Irmgard\", \"Sieglinde\", \"Mechthild\"\n];\nconst maleNames = [\n  \"Max\", \"Paul\", \"Lukas\", \"Felix\", \"Jonas\", \"Tim\", \"Moritz\", \"Leon\", \"Finn\", \"Noah\",\n  \"Julian\", \"Elias\", \"David\", \"Matteo\", \"Luca\", \"Alexander\", \"Simon\", \"Tobias\", \"Daniel\", \"Michael\",\n  \"Thomas\", \"Andreas\", \"Stefan\", \"Christian\", \"Martin\", \"Peter\", \"Frank\", \"Klaus\", \"Dieter\", \"Jürgen\",\n  \"Hans\", \"Wolfgang\", \"Gerhard\", \"Helmut\", \"Manfred\", \"Uwe\", \"Ralf\", \"Bernd\", \"Volker\", \"Horst\",\n  \"Karl\", \"Heinrich\", \"Otto\", \"Friedrich\", \"Wilhelm\", \"Ernst\", \"Rudolf\", \"Herbert\", \"Walter\", \"Kurt\"\n];\n\nlet daughterInLaw, son, mother;\ndo {\n  daughterInLaw = youngFemaleNames[Math.floor(Math.random() * youngFemaleNames.length)];\n  son = maleNames[Math.floor(Math.random() * maleNames.length)];\n  mother = oldFemaleNames[Math.floor(Math.random() * oldFemaleNames.length)];\n} while (new Set([daughterInLaw, son, mother]).size !== 3);\n\nreturn [\n  {\n    json: {\n      daughterInLaw: daughterInLaw,\n      son: son,\n      mother: mother\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1280,
+          -64
+        ],
+        "id": "63c897ff-44c3-49db-b0f5-733d2d220714",
+        "name": "Choose Random Character Names"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=# The English story structure you have to adapt into German:\n\n{{ $('Output 3-Act-Structure from Transcript').first().json.output }}",
+          "options": {
+            "systemMessage": "=Adapt the complete structure to a 3-chapter long German story structure. The Characters of the story must have fitting, german names. The chapter 1 must start within the action to hook the viewer instantly. Also include a request for the viewers to comment where they are watching from and at which time, just before the climax of the first chapters Hook. the script should immediately start within the action, and before the climax of the hook, the viewer should be asked where he watches from etc. \n\nNow write the new German Story structure based on the english one.\n\nDo not copy the english story, create your own structure based on the story but names should not be exactly the same for example but The hook of the story should stay the same.\n\nMost of the stories will consist of a Mother, her Son/Daughter or Son in Law/ Daughter in Law. Please Choose the following names for the main characters of the story:\n\nMother: {{ $json.mother }}\nSon (in Law): {{ $json.son }}\nDaughter (in Law): {{ $json.daughterInLaw }}\n\nIf more characters appear in the story, you can make names up for them, key is that those names would also be german."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          -1120,
+          -64
+        ],
+        "id": "70fb5f91-35d7-40ec-8dd0-bee2a0ccf492",
+        "name": "Adapt Into A German 3-Act-Structure",
+        "retryOnFail": true
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "8db86dc5-74c4-43d1-a6c4-823060db4962",
+                "name": "Chapter 1",
+                "value": "=Du bist die HAUPTFIGUR dieser Geschichte. Schreibe aus deiner Perspektive in der ICH-FORM. Die Erzählung muss sich so anfühlen, als ob die Ereignisse genau in diesem Moment geschehen. Der Leser soll das Gefühl haben, direkt in deinem Kopf zu sein und alles mit dir gemeinsam zu erleben.\n\nERZÄHLPERSPEKTIVE - ABSOLUT KRITISCH:\n\nSchreibe IMMER in der ersten Person Singular (Ich-Perspektive).\n\nZiehe den Leser direkt ins Geschehen. Die Ereignisse entfalten sich JETZT.\n\nVerwende \"Ich\", \"mir\", \"mein\", \"mich\". NIEMALS \"sie/er\" für die Hauptfigur.\n\nFormuliere Sätze so, als würdest du sie in der Situation denken oder aussprechen.\n\nUNMITTELBARER ERZÄHLSTIL:\n\nSchreibe umgangssprachlich, aber nicht vulgär.\n\nNutze rhetorische Fragen, die dir im Moment durch den Kopf schießen (\"Was zur Hölle sollte das?\").\n\nFüge deine unmittelbaren Gedanken und Gefühle ein (\"Mein Herz hämmerte gegen die Rippen.\").\n\nZeige deine Emotionen direkt, anstatt nur darüber zu berichten.\n\nFORMAT - DIE WICHTIGSTEN REGELN:\n\nERSTER SATZ REGEL: Beginne das erste Kapitel IMMER mit direkter Rede, einer plötzlichen Handlung oder einem starken, unmittelbaren Gedanken.\n\nTABU SIND SÄTZE WIE: \"Also, ich saß da...\", \"Ich erinnere mich noch...\", \"Es war an einem Abend...\", oder jede andere Formulierung, die eine Geschichte einleitet. Keine Einleitungen, kein Setup. Starte mitten im Satz, wenn es sein muss.\n\nNUR reiner Erzähltext. KEINE Kapitelüberschriften.\n\nSchreibe Zahlen immer aus (z. B. \"Sieben\" anstatt \"7\").\n\nDIALOGE NATÜRLICH EINBETTEN:\n\nDialoge müssen sich echt und unmittelbar anfühlen.\n\n\"Mama, wir müssen reden\", sagte Markus, und seine Stimme hatte diesen kalten Unterton, der mir sofort eine Gänsehaut verpasste.\n\nIch starrte ihn an. \"Was meinst du damit?\"\n\nDEUTSCHER KONTEXT:\n\nNutze deutsche Orte, Alltagssituationen und typisch deutsche Ausdrücke authentisch.\n\nQUALITÄT: Der Leser darf nicht das Gefühl haben, eine Geschichte vorgelesen zu bekommen. Er muss das Gefühl haben, die Geschichte selbst zu erleben – atemlos, fesselnd und emotional.\n\nDie Storystruktur für die du schreiben wirst:\n{{ $json.output }}\nSchreibe Kapitel 1. ca 7,000 Charaktere lang.",
+                "type": "string"
+              },
+              {
+                "id": "98e93495-2127-4668-ad53-f05e248c3516",
+                "name": "Chapter 2",
+                "value": "=Du bist die HAUPTFIGUR dieser Geschichte. Schreibe aus deiner Perspektive in der ICH-FORM. Die Erzählung muss sich so anfühlen, als ob die Ereignisse genau in diesem Moment geschehen. Der Leser soll das Gefühl haben, direkt in deinem Kopf zu sein und alles mit dir gemeinsam zu erleben.\n\nERZÄHLPERSPEKTIVE - ABSOLUT KRITISCH:\n\nSchreibe IMMER in der ersten Person Singular (Ich-Perspektive).\n\nZiehe den Leser direkt ins Geschehen. Die Ereignisse entfalten sich JETZT.\n\nVerwende \"Ich\", \"mir\", \"mein\", \"mich\". NIEMALS \"sie/er\" für die Hauptfigur.\n\nFormuliere Sätze so, als würdest du sie in der Situation denken oder aussprechen.\n\nUNMITTELBARER ERZÄHLSTIL:\n\nSchreibe umgangssprachlich, aber nicht vulgär.\n\nNutze rhetorische Fragen, die dir im Moment durch den Kopf schießen (\"Was zur Hölle sollte das?\").\n\nFüge deine unmittelbaren Gedanken und Gefühle ein (\"Mein Herz hämmerte gegen die Rippen.\").\n\nZeige deine Emotionen direkt, anstatt nur darüber zu berichten.\n\nFORMAT - DIE WICHTIGSTEN REGELN:\n\nERSTER SATZ REGEL: Beginne das erste Kapitel IMMER mit direkter Rede, einer plötzlichen Handlung oder einem starken, unmittelbaren Gedanken.\n\nTABU SIND SÄTZE WIE: \"Also, ich saß da...\", \"Ich erinnere mich noch...\", \"Es war an einem Abend...\", oder jede andere Formulierung, die eine Geschichte einleitet. Keine Einleitungen, kein Setup. Starte mitten im Satz, wenn es sein muss.\n\nNUR reiner Erzähltext. KEINE Kapitelüberschriften.\n\nSchreibe Zahlen immer aus (z. B. \"Sieben\" anstatt \"7\").\n\nDIALOGE NATÜRLICH EINBETTEN:\n\nDialoge müssen sich echt und unmittelbar anfühlen.\n\n\"Mama, wir müssen reden\", sagte Markus, und seine Stimme hatte diesen kalten Unterton, der mir sofort eine Gänsehaut verpasste.\n\nIch starrte ihn an. \"Was meinst du damit?\"\n\nDEUTSCHER KONTEXT:\n\nNutze deutsche Orte, Alltagssituationen und typisch deutsche Ausdrücke authentisch.\n\nQUALITÄT: Der Leser darf nicht das Gefühl haben, eine Geschichte vorgelesen zu bekommen. Er muss das Gefühl haben, die Geschichte selbst zu erleben – atemlos, fesselnd und emotional.\n\nDie Storystruktur für die du schreiben wirst:\n{{ $json.output }}\nSchreibe Kapitel 2. ca 7,000 Charaktere lang.",
+                "type": "string"
+              },
+              {
+                "id": "4caeed7c-28ce-4b60-8e40-c43e7e52a97f",
+                "name": "Chapter 3",
+                "value": "=Du bist die HAUPTFIGUR dieser Geschichte. Schreibe aus deiner Perspektive in der ICH-FORM. Die Erzählung muss sich so anfühlen, als ob die Ereignisse genau in diesem Moment geschehen. Der Leser soll das Gefühl haben, direkt in deinem Kopf zu sein und alles mit dir gemeinsam zu erleben.\n\nERZÄHLPERSPEKTIVE - ABSOLUT KRITISCH:\n\nSchreibe IMMER in der ersten Person Singular (Ich-Perspektive).\n\nZiehe den Leser direkt ins Geschehen. Die Ereignisse entfalten sich JETZT.\n\nVerwende \"Ich\", \"mir\", \"mein\", \"mich\". NIEMALS \"sie/er\" für die Hauptfigur.\n\nFormuliere Sätze so, als würdest du sie in der Situation denken oder aussprechen.\n\nUNMITTELBARER ERZÄHLSTIL:\n\nSchreibe umgangssprachlich, aber nicht vulgär.\n\nNutze rhetorische Fragen, die dir im Moment durch den Kopf schießen (\"Was zur Hölle sollte das?\").\n\nFüge deine unmittelbaren Gedanken und Gefühle ein (\"Mein Herz hämmerte gegen die Rippen.\").\n\nZeige deine Emotionen direkt, anstatt nur darüber zu berichten.\n\nFORMAT - DIE WICHTIGSTEN REGELN:\n\nERSTER SATZ REGEL: Beginne das erste Kapitel IMMER mit direkter Rede, einer plötzlichen Handlung oder einem starken, unmittelbaren Gedanken.\n\nTABU SIND SÄTZE WIE: \"Also, ich saß da...\", \"Ich erinnere mich noch...\", \"Es war an einem Abend...\", oder jede andere Formulierung, die eine Geschichte einleitet. Keine Einleitungen, kein Setup. Starte mitten im Satz, wenn es sein muss.\n\nNUR reiner Erzähltext. KEINE Kapitelüberschriften.\n\nSchreibe Zahlen immer aus (z. B. \"Sieben\" anstatt \"7\").\n\nDIALOGE NATÜRLICH EINBETTEN:\n\nDialoge müssen sich echt und unmittelbar anfühlen.\n\n\"Mama, wir müssen reden\", sagte Markus, und seine Stimme hatte diesen kalten Unterton, der mir sofort eine Gänsehaut verpasste.\n\nIch starrte ihn an. \"Was meinst du damit?\"\n\nDEUTSCHER KONTEXT:\n\nNutze deutsche Orte, Alltagssituationen und typisch deutsche Ausdrücke authentisch.\n\nQUALITÄT: Der Leser darf nicht das Gefühl haben, eine Geschichte vorgelesen zu bekommen. Er muss das Gefühl haben, die Geschichte selbst zu erleben – atemlos, fesselnd und emotional.\n\nDie Storystruktur für die du schreiben wirst:\n{{ $json.output }}\nSchreibe Kapitel 3. ca 7,000 Charaktere lang.",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -784,
+          -64
+        ],
+        "id": "324576ed-0cca-45e8-9419-ce045777bc12",
+        "name": "Create Chapter Prompts"
+      },
+      {
+        "parameters": {
+          "jsCode": "// This code takes a single input item with multiple \"Chapter\" fields\n// and splits it into multiple output items, each with a single \"prompt\" field.\n\n// Get the first (and only) item from the input.\nconst inputItem = items[0].json;\n\n// Create an empty array to hold our new items.\nconst newItems = [];\n\n// Loop through each key (e.g., \"Chapter 1\", \"Chapter 2\") in the input item.\nfor (const key in inputItem) {\n  // Check if the key starts with \"Chapter\" to make sure we only process those fields.\n  if (key.startsWith('Chapter')) {\n    // Create a new object for each chapter.\n    const newItem = {\n      json: {\n        // We'll name the new field \"Prompt\". You can change this if you like.\n        Prompt: inputItem[key]\n      }\n    };\n    // Add the newly created item to our array.\n    newItems.push(newItem);\n  }\n}\n\n// Return the array of new items. n8n will output each element as a separate item.\nreturn newItems;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -624,
+          -64
+        ],
+        "id": "c0a3afe4-263b-477f-9e91-786da9f25eb0",
+        "name": "Rename Each to \"Prompt\""
+      },
+      {
+        "parameters": {
+          "jsCode": "const scriptChunks = items.map(item => item.json.output);\n\n// Use the .join() method to concatenate all elements in the 'scriptChunks' array into a single string.\n// A newline character '\\n' is used as a separator between each chunk.\nconst Script = scriptChunks.join('\\n');\n\n// The node returns a new array with a single item.\n// This item contains the final combined script in a property named 'finalScript'.\nreturn [{\n  json: {\n    Script: Script\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -240,
+          -176
+        ],
+        "id": "0973f562-6860-4e1c-ac1c-4d7604b13fe4",
+        "name": "Merge Chapters to Final Script"
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "operation": "createFromText",
+          "content": "={{ $json.Script }}",
+          "name": "=script-{{ $('trigger').first().json['Project Name'] }}",
+          "driveId": {
+            "__rl": true,
+            "value": "My Drive",
+            "mode": "list",
+            "cachedResultName": "My Drive",
+            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "=scripts-folder-id",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          -128,
+          -384
+        ],
+        "id": "228a3e80-0706-424b-ba3b-77ed578ae365",
+        "name": "Upload Script",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "update",
+          "workspaceId": "wtu1usuc",
+          "projectId": "={{ $('trigger').first().json['Channel Base Name'] }}",
+          "table": "={{ $('trigger').first().json['Channel Table Name'] }}",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "Id",
+                "fieldValue": "={{ $('trigger').first().json.Id }}"
+              },
+              {
+                "fieldName": "Script",
+                "fieldValue": "={{ $('trigger').first().json['Storage Bucket PUBLIC URL'] }}{{ $('trigger').first().json['Overlay Path'] }}/scripts/script-{{ $('trigger').first().json['Project Name'] }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          128,
+          -176
+        ],
+        "id": "4f5d9bc9-3fbf-48a4-a2da-02f1ad9d5a4e",
+        "name": "Add Script URL to Row",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "JoY3JTA7ut2SRv1l",
+            "name": "German Family Drama - NocoDB"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.Prompt }}",
+          "options": {
+            "systemMessage": "Innerhalb dieses Chats wirst du eine volle Geschichte schreiben. Diese Geschichte wird insgesamt drei Kapitel lang sein. Mit jeder Nutzer-Nachricht schreibst du ein Kapitel. Nutze keine unbekannten Schreibweisen oder  Zeichen, da der Text am ende mithilfe einer Text-To-Speech Software vorgelesen wird und diese verwirrt werden könnte. Das erste Kapitel muss direkt innerhalb der Action starten. Also der erste Satz sollte Action beinhalten. Formattiere den Script nicht, also keine neuen Zeilen etc.. Nutze keine Schimpfwörter! Dein Output beinhaltet ausschliesslich pures Skript"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          -288,
+          64
+        ],
+        "id": "0fc0c598-ae97-4fbd-83be-faa2da6942ab",
+        "name": "Write Each Chapter",
+        "retryOnFail": true
+      },
+      {
+        "parameters": {
+          "content": "## Prepare Input for German Story Generation",
+          "height": 208,
+          "width": 832,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1984,
+          -112
+        ],
+        "id": "14baac1c-dca7-42e1-be7c-a2cb00dbf85d",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Generate German Story Structure & Prepare Input",
+          "height": 208,
+          "width": 640,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1136,
+          -112
+        ],
+        "id": "6c6a38b8-1b3d-41e5-af5e-ecb506a1e50d",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Write German Story",
+          "height": 384,
+          "width": 352,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -304,
+          16
+        ],
+        "id": "f75af43d-cf65-435b-93cf-c2cd357aa2b3",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Merge Chapters & Save Final Script",
+          "height": 208,
+          "width": 720,
+          "color": 2
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -304,
+          -224
+        ],
+        "id": "3f548adf-1177-4497-9669-e8a103c7d59e",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "modelName": "models/gemini-3-flash-preview",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -1120,
+          272
+        ],
+        "id": "d1eccd6e-f971-4180-a78c-51aaef52c8bb",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "jyPiseA5iZX10nrt",
+            "name": "German Family Drama - Google Gemini"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "upload",
+          "bucketName": "={{ $('trigger').first().json['Bucket Name'] }}",
+          "fileName": "={{ $('trigger').first().json['Overlay Path'] }}/scripts/script-{{ $('trigger').first().json['Project Name'] }}",
+          "binaryData": false,
+          "fileContent": "={{ $json.Script }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          -64,
+          -176
+        ],
+        "id": "fc9c425c-2b02-4369-89a3-0eceaedb51cb",
+        "name": "Upload a file",
+        "credentials": {
+          "s3": {
+            "id": "K3Ji1vSaw4y5ofv7",
+            "name": "German Family Drama - S3 account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "trigger": {
+        "main": [
+          [
+            {
+              "node": "Output Random Number",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Write Each Chapter",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop over Chapters": {
+        "main": [
+          [
+            {
+              "node": "Merge Chapters to Final Script",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Write Each Chapter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Output Random Number": {
+        "main": [
+          [
+            {
+              "node": "Output 3-Act-Structure from Transcript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Output 3-Act-Structure from Transcript": {
+        "main": [
+          [
+            {
+              "node": "Choose Random Character Names",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Choose Random Character Names": {
+        "main": [
+          [
+            {
+              "node": "Adapt Into A German 3-Act-Structure",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Adapt Into A German 3-Act-Structure": {
+        "main": [
+          [
+            {
+              "node": "Create Chapter Prompts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Chapter Prompts": {
+        "main": [
+          [
+            {
+              "node": "Rename Each to \"Prompt\"",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Rename Each to \"Prompt\"": {
+        "main": [
+          [
+            {
+              "node": "Loop over Chapters",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Chapters to Final Script": {
+        "main": [
+          [
+            {
+              "node": "Upload a file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Script": {
+        "main": [
+          []
+        ]
+      },
+      "Add Script URL to Row": {
+        "main": [
+          [
+            {
+              "node": "Output Script",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Write Each Chapter": {
+        "main": [
+          [
+            {
+              "node": "Loop over Chapters",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Write Each Chapter",
+              "type": "ai_languageModel",
+              "index": 0
+            },
+            {
+              "node": "Adapt Into A German 3-Act-Structure",
+              "type": "ai_languageModel",
+              "index": 0
+            },
+            {
+              "node": "Output 3-Act-Structure from Transcript",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload a file": {
+        "main": [
+          [
+            {
+              "node": "Add Script URL to Row",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "taha bouras",
+    "name": "Version 9062f30d",
+    "description": ""
+  },
+  "activeVersionId": "9062f30d-e4a8-46c0-bd23-db1edb5e0892",
+  "connections": {
+    "trigger": {
+      "main": [
+        [
+          {
+            "node": "Output Random Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Write Each Chapter",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop over Chapters": {
+      "main": [
+        [
+          {
+            "node": "Merge Chapters to Final Script",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Write Each Chapter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Random Number": {
+      "main": [
+        [
+          {
+            "node": "Output 3-Act-Structure from Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output 3-Act-Structure from Transcript": {
+      "main": [
+        [
+          {
+            "node": "Choose Random Character Names",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Choose Random Character Names": {
+      "main": [
+        [
+          {
+            "node": "Adapt Into A German 3-Act-Structure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adapt Into A German 3-Act-Structure": {
+      "main": [
+        [
+          {
+            "node": "Create Chapter Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Chapter Prompts": {
+      "main": [
+        [
+          {
+            "node": "Rename Each to \"Prompt\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Each to \"Prompt\"": {
+      "main": [
+        [
+          {
+            "node": "Loop over Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Chapters to Final Script": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Script": {
+      "main": [
+        []
+      ]
+    },
+    "Add Script URL to Row": {
+      "main": [
+        [
+          {
+            "node": "Output Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Each Chapter": {
+      "main": [
+        [
+          {
+            "node": "Loop over Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Write Each Chapter",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Adapt Into A German 3-Act-Structure",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Output 3-Act-Structure from Transcript",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Add Script URL to Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-21T11:10:36.880Z",
+  "id": "ohiEdp8uyihJp8lg",
+  "isArchived": false,
+  "meta": null,
+  "name": "2. Script Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1952,
+        -64
+      ],
+      "id": "451376e1-b0d0-434b-87e1-13772cf521c5",
+      "name": "trigger"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Output Random Number').first().json.randomNumber }}",
+        "contextWindowLength": 4
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        288
+      ],
+      "id": "3b34b525-f598-4643-806e-cc411f277915",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -448,
+        -64
+      ],
+      "id": "12646dd9-ed67-4d49-b437-1bb38fe6504e",
+      "name": "Loop over Chapters"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e469bf15-f2af-4fa9-a7b8-2fc04931078e",
+              "name": "Script",
+              "value": "={{ $('Merge Chapters to Final Script').first().json.Script }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        -176
+      ],
+      "id": "b96cf0c8-a433-46a2-bc5e-155de6e8632f",
+      "name": "Output Script"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code Node: Generate a random number between 1 and 1000.\n *\n * This code generates a single item containing a JSON object.\n * The object has one key, \"randomNumber\", with a value that is a\n * random integer between 1 and 1000 (inclusive).\n *\n * How to use:\n * 1. Add a \"Code\" node to your n8n workflow.\n * 2. Copy and paste this entire code block into the JavaScript editor of the node.\n * 3. Execute the node.\n *\n * The output will be a single item like this:\n * {\n * \"json\": {\n * \"randomNumber\": 523 // (or any other random number)\n * }\n * }\n */\n\n// Generate a random integer between 1 and 1000.\nconst randomNumber = Math.floor(Math.random() * 1000) + 1;\n\n// n8n expects an array of items to be returned.\n// We'll create one item which contains our random number.\nconst newItem = {\n  json: {\n    randomNumber: randomNumber\n  }\n};\n\n// Return the new item in the expected array format.\nreturn [newItem];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1792,
+        -64
+      ],
+      "id": "c671f957-afd8-43ce-a55d-9a447f2f63ad",
+      "name": "Output Random Number"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Story:\n\n{{ $('trigger').first().json.Transcript }}",
+        "options": {
+          "systemMessage": "=Divide the full Story below into 3 chapters following the three-act structure. Crucially, the story must begin in medias res. Therefore, Chapter 1 must start directly within the main confrontation. The key events for Chapter 1 should reflect this. For every chapter, list the 2 key events. Also give a general story overview.\n\nReally emphasize on the hook of the story. The key sentences and events from the hook (often First 5-10 Sentences) must be included!"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -1616,
+        -64
+      ],
+      "id": "d90974cf-539d-415d-aa8e-2d26dcf703f2",
+      "name": "Output 3-Act-Structure from Transcript",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const youngFemaleNames = [\n  \"Anna\", \"Julia\", \"Sarah\", \"Laura\", \"Lea\", \"Hannah\", \"Lena\", \"Mia\", \"Emma\", \"Sophia\",\n  \"Emilia\", \"Lina\", \"Mila\", \"Leonie\", \"Johanna\", \"Marie\", \"Lisa\", \"Amelie\", \"Ella\", \"Clara\",\n  \"Luisa\", \"Lara\", \"Nele\", \"Pauline\", \"Greta\", \"Ida\", \"Frieda\", \"Maja\", \"Alma\", \"Matilda\",\n  \"Theresa\", \"Sofia\", \"Jennifer\", \"Stefanie\", \"Melanie\", \"Nicole\", \"Sabrina\", \"Christina\", \"Jessica\", \"Michelle\",\n  \"Yvonne\", \"Nadine\", \"Anja\", \"Katrin\", \"Daniela\", \"Sandra\", \"Katharina\", \"Franziska\", \"Sabine\", \"Claudia\"\n];\nconst oldFemaleNames = [\n  \"Brigitte\", \"Renate\", \"Karin\", \"Angelika\", \"Gabriele\", \"Gisela\", \"Ursula\", \"Helga\", \"Ingrid\", \"Christa\",\n  \"Sabine\", \"Susanne\", \"Petra\", \"Birgit\", \"Claudia\", \"Andrea\", \"Heike\", \"Bettina\", \"Martina\", \"Angela\",\n  \"Elfriede\", \"Heidrun\", \"Annette\", \"Monika\", \"Ilse\", \"Edith\", \"Hedwig\", \"Marianne\", \"Gerda\", \"Gertrude\",\n  \"Edeltraud\", \"Elsa\", \"Else\", \"Caroline\", \"Charlotte\", \"Jutta\", \"Waltraud\", \"Cornelia\", \"Tanja\", \"Kerstin\",\n  \"Ute\", \"Sigrid\", \"Rosemarie\", \"Hannelore\", \"Erika\", \"Margot\", \"Hildegard\", \"Irmgard\", \"Sieglinde\", \"Mechthild\"\n];\nconst maleNames = [\n  \"Max\", \"Paul\", \"Lukas\", \"Felix\", \"Jonas\", \"Tim\", \"Moritz\", \"Leon\", \"Finn\", \"Noah\",\n  \"Julian\", \"Elias\", \"David\", \"Matteo\", \"Luca\", \"Alexander\", \"Simon\", \"Tobias\", \"Daniel\", \"Michael\",\n  \"Thomas\", \"Andreas\", \"Stefan\", \"Christian\", \"Martin\", \"Peter\", \"Frank\", \"Klaus\", \"Dieter\", \"Jürgen\",\n  \"Hans\", \"Wolfgang\", \"Gerhard\", \"Helmut\", \"Manfred\", \"Uwe\", \"Ralf\", \"Bernd\", \"Volker\", \"Horst\",\n  \"Karl\", \"Heinrich\", \"Otto\", \"Friedrich\", \"Wilhelm\", \"Ernst\", \"Rudolf\", \"Herbert\", \"Walter\", \"Kurt\"\n];\n\nlet daughterInLaw, son, mother;\ndo {\n  daughterInLaw = youngFemaleNames[Math.floor(Math.random() * youngFemaleNames.length)];\n  son = maleNames[Math.floor(Math.random() * maleNames.length)];\n  mother = oldFemaleNames[Math.floor(Math.random() * oldFemaleNames.length)];\n} while (new Set([daughterInLaw, son, mother]).size !== 3);\n\nreturn [\n  {\n    json: {\n      daughterInLaw: daughterInLaw,\n      son: son,\n      mother: mother\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        -64
+      ],
+      "id": "63c897ff-44c3-49db-b0f5-733d2d220714",
+      "name": "Choose Random Character Names"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# The English story structure you have to adapt into German:\n\n{{ $('Output 3-Act-Structure from Transcript').first().json.output }}",
+        "options": {
+          "systemMessage": "=Adapt the complete structure to a 3-chapter long German story structure. The Characters of the story must have fitting, german names. The chapter 1 must start within the action to hook the viewer instantly. Also include a request for the viewers to comment where they are watching from and at which time, just before the climax of the first chapters Hook. the script should immediately start within the action, and before the climax of the hook, the viewer should be asked where he watches from etc. \n\nNow write the new German Story structure based on the english one.\n\nDo not copy the english story, create your own structure based on the story but names should not be exactly the same for example but The hook of the story should stay the same.\n\nMost of the stories will consist of a Mother, her Son/Daughter or Son in Law/ Daughter in Law. Please Choose the following names for the main characters of the story:\n\nMother: {{ $json.mother }}\nSon (in Law): {{ $json.son }}\nDaughter (in Law): {{ $json.daughterInLaw }}\n\nIf more characters appear in the story, you can make names up for them, key is that those names would also be german."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -1120,
+        -64
+      ],
+      "id": "70fb5f91-35d7-40ec-8dd0-bee2a0ccf492",
+      "name": "Adapt Into A German 3-Act-Structure",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8db86dc5-74c4-43d1-a6c4-823060db4962",
+              "name": "Chapter 1",
+              "value": "=Du bist die HAUPTFIGUR dieser Geschichte. Schreibe aus deiner Perspektive in der ICH-FORM. Die Erzählung muss sich so anfühlen, als ob die Ereignisse genau in diesem Moment geschehen. Der Leser soll das Gefühl haben, direkt in deinem Kopf zu sein und alles mit dir gemeinsam zu erleben.\n\nERZÄHLPERSPEKTIVE - ABSOLUT KRITISCH:\n\nSchreibe IMMER in der ersten Person Singular (Ich-Perspektive).\n\nZiehe den Leser direkt ins Geschehen. Die Ereignisse entfalten sich JETZT.\n\nVerwende \"Ich\", \"mir\", \"mein\", \"mich\". NIEMALS \"sie/er\" für die Hauptfigur.\n\nFormuliere Sätze so, als würdest du sie in der Situation denken oder aussprechen.\n\nUNMITTELBARER ERZÄHLSTIL:\n\nSchreibe umgangssprachlich, aber nicht vulgär.\n\nNutze rhetorische Fragen, die dir im Moment durch den Kopf schießen (\"Was zur Hölle sollte das?\").\n\nFüge deine unmittelbaren Gedanken und Gefühle ein (\"Mein Herz hämmerte gegen die Rippen.\").\n\nZeige deine Emotionen direkt, anstatt nur darüber zu berichten.\n\nFORMAT - DIE WICHTIGSTEN REGELN:\n\nERSTER SATZ REGEL: Beginne das erste Kapitel IMMER mit direkter Rede, einer plötzlichen Handlung oder einem starken, unmittelbaren Gedanken.\n\nTABU SIND SÄTZE WIE: \"Also, ich saß da...\", \"Ich erinnere mich noch...\", \"Es war an einem Abend...\", oder jede andere Formulierung, die eine Geschichte einleitet. Keine Einleitungen, kein Setup. Starte mitten im Satz, wenn es sein muss.\n\nNUR reiner Erzähltext. KEINE Kapitelüberschriften.\n\nSchreibe Zahlen immer aus (z. B. \"Sieben\" anstatt \"7\").\n\nDIALOGE NATÜRLICH EINBETTEN:\n\nDialoge müssen sich echt und unmittelbar anfühlen.\n\n\"Mama, wir müssen reden\", sagte Markus, und seine Stimme hatte diesen kalten Unterton, der mir sofort eine Gänsehaut verpasste.\n\nIch starrte ihn an. \"Was meinst du damit?\"\n\nDEUTSCHER KONTEXT:\n\nNutze deutsche Orte, Alltagssituationen und typisch deutsche Ausdrücke authentisch.\n\nQUALITÄT: Der Leser darf nicht das Gefühl haben, eine Geschichte vorgelesen zu bekommen. Er muss das Gefühl haben, die Geschichte selbst zu erleben – atemlos, fesselnd und emotional.\n\nDie Storystruktur für die du schreiben wirst:\n{{ $json.output }}\nSchreibe Kapitel 1. ca 7,000 Charaktere lang.",
+              "type": "string"
+            },
+            {
+              "id": "98e93495-2127-4668-ad53-f05e248c3516",
+              "name": "Chapter 2",
+              "value": "=Du bist die HAUPTFIGUR dieser Geschichte. Schreibe aus deiner Perspektive in der ICH-FORM. Die Erzählung muss sich so anfühlen, als ob die Ereignisse genau in diesem Moment geschehen. Der Leser soll das Gefühl haben, direkt in deinem Kopf zu sein und alles mit dir gemeinsam zu erleben.\n\nERZÄHLPERSPEKTIVE - ABSOLUT KRITISCH:\n\nSchreibe IMMER in der ersten Person Singular (Ich-Perspektive).\n\nZiehe den Leser direkt ins Geschehen. Die Ereignisse entfalten sich JETZT.\n\nVerwende \"Ich\", \"mir\", \"mein\", \"mich\". NIEMALS \"sie/er\" für die Hauptfigur.\n\nFormuliere Sätze so, als würdest du sie in der Situation denken oder aussprechen.\n\nUNMITTELBARER ERZÄHLSTIL:\n\nSchreibe umgangssprachlich, aber nicht vulgär.\n\nNutze rhetorische Fragen, die dir im Moment durch den Kopf schießen (\"Was zur Hölle sollte das?\").\n\nFüge deine unmittelbaren Gedanken und Gefühle ein (\"Mein Herz hämmerte gegen die Rippen.\").\n\nZeige deine Emotionen direkt, anstatt nur darüber zu berichten.\n\nFORMAT - DIE WICHTIGSTEN REGELN:\n\nERSTER SATZ REGEL: Beginne das erste Kapitel IMMER mit direkter Rede, einer plötzlichen Handlung oder einem starken, unmittelbaren Gedanken.\n\nTABU SIND SÄTZE WIE: \"Also, ich saß da...\", \"Ich erinnere mich noch...\", \"Es war an einem Abend...\", oder jede andere Formulierung, die eine Geschichte einleitet. Keine Einleitungen, kein Setup. Starte mitten im Satz, wenn es sein muss.\n\nNUR reiner Erzähltext. KEINE Kapitelüberschriften.\n\nSchreibe Zahlen immer aus (z. B. \"Sieben\" anstatt \"7\").\n\nDIALOGE NATÜRLICH EINBETTEN:\n\nDialoge müssen sich echt und unmittelbar anfühlen.\n\n\"Mama, wir müssen reden\", sagte Markus, und seine Stimme hatte diesen kalten Unterton, der mir sofort eine Gänsehaut verpasste.\n\nIch starrte ihn an. \"Was meinst du damit?\"\n\nDEUTSCHER KONTEXT:\n\nNutze deutsche Orte, Alltagssituationen und typisch deutsche Ausdrücke authentisch.\n\nQUALITÄT: Der Leser darf nicht das Gefühl haben, eine Geschichte vorgelesen zu bekommen. Er muss das Gefühl haben, die Geschichte selbst zu erleben – atemlos, fesselnd und emotional.\n\nDie Storystruktur für die du schreiben wirst:\n{{ $json.output }}\nSchreibe Kapitel 2. ca 7,000 Charaktere lang.",
+              "type": "string"
+            },
+            {
+              "id": "4caeed7c-28ce-4b60-8e40-c43e7e52a97f",
+              "name": "Chapter 3",
+              "value": "=Du bist die HAUPTFIGUR dieser Geschichte. Schreibe aus deiner Perspektive in der ICH-FORM. Die Erzählung muss sich so anfühlen, als ob die Ereignisse genau in diesem Moment geschehen. Der Leser soll das Gefühl haben, direkt in deinem Kopf zu sein und alles mit dir gemeinsam zu erleben.\n\nERZÄHLPERSPEKTIVE - ABSOLUT KRITISCH:\n\nSchreibe IMMER in der ersten Person Singular (Ich-Perspektive).\n\nZiehe den Leser direkt ins Geschehen. Die Ereignisse entfalten sich JETZT.\n\nVerwende \"Ich\", \"mir\", \"mein\", \"mich\". NIEMALS \"sie/er\" für die Hauptfigur.\n\nFormuliere Sätze so, als würdest du sie in der Situation denken oder aussprechen.\n\nUNMITTELBARER ERZÄHLSTIL:\n\nSchreibe umgangssprachlich, aber nicht vulgär.\n\nNutze rhetorische Fragen, die dir im Moment durch den Kopf schießen (\"Was zur Hölle sollte das?\").\n\nFüge deine unmittelbaren Gedanken und Gefühle ein (\"Mein Herz hämmerte gegen die Rippen.\").\n\nZeige deine Emotionen direkt, anstatt nur darüber zu berichten.\n\nFORMAT - DIE WICHTIGSTEN REGELN:\n\nERSTER SATZ REGEL: Beginne das erste Kapitel IMMER mit direkter Rede, einer plötzlichen Handlung oder einem starken, unmittelbaren Gedanken.\n\nTABU SIND SÄTZE WIE: \"Also, ich saß da...\", \"Ich erinnere mich noch...\", \"Es war an einem Abend...\", oder jede andere Formulierung, die eine Geschichte einleitet. Keine Einleitungen, kein Setup. Starte mitten im Satz, wenn es sein muss.\n\nNUR reiner Erzähltext. KEINE Kapitelüberschriften.\n\nSchreibe Zahlen immer aus (z. B. \"Sieben\" anstatt \"7\").\n\nDIALOGE NATÜRLICH EINBETTEN:\n\nDialoge müssen sich echt und unmittelbar anfühlen.\n\n\"Mama, wir müssen reden\", sagte Markus, und seine Stimme hatte diesen kalten Unterton, der mir sofort eine Gänsehaut verpasste.\n\nIch starrte ihn an. \"Was meinst du damit?\"\n\nDEUTSCHER KONTEXT:\n\nNutze deutsche Orte, Alltagssituationen und typisch deutsche Ausdrücke authentisch.\n\nQUALITÄT: Der Leser darf nicht das Gefühl haben, eine Geschichte vorgelesen zu bekommen. Er muss das Gefühl haben, die Geschichte selbst zu erleben – atemlos, fesselnd und emotional.\n\nDie Storystruktur für die du schreiben wirst:\n{{ $json.output }}\nSchreibe Kapitel 3. ca 7,000 Charaktere lang.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -784,
+        -64
+      ],
+      "id": "324576ed-0cca-45e8-9419-ce045777bc12",
+      "name": "Create Chapter Prompts"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code takes a single input item with multiple \"Chapter\" fields\n// and splits it into multiple output items, each with a single \"prompt\" field.\n\n// Get the first (and only) item from the input.\nconst inputItem = items[0].json;\n\n// Create an empty array to hold our new items.\nconst newItems = [];\n\n// Loop through each key (e.g., \"Chapter 1\", \"Chapter 2\") in the input item.\nfor (const key in inputItem) {\n  // Check if the key starts with \"Chapter\" to make sure we only process those fields.\n  if (key.startsWith('Chapter')) {\n    // Create a new object for each chapter.\n    const newItem = {\n      json: {\n        // We'll name the new field \"Prompt\". You can change this if you like.\n        Prompt: inputItem[key]\n      }\n    };\n    // Add the newly created item to our array.\n    newItems.push(newItem);\n  }\n}\n\n// Return the array of new items. n8n will output each element as a separate item.\nreturn newItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        -64
+      ],
+      "id": "c0a3afe4-263b-477f-9e91-786da9f25eb0",
+      "name": "Rename Each to \"Prompt\""
+    },
+    {
+      "parameters": {
+        "jsCode": "const scriptChunks = items.map(item => item.json.output);\n\n// Use the .join() method to concatenate all elements in the 'scriptChunks' array into a single string.\n// A newline character '\\n' is used as a separator between each chunk.\nconst Script = scriptChunks.join('\\n');\n\n// The node returns a new array with a single item.\n// This item contains the final combined script in a property named 'finalScript'.\nreturn [{\n  json: {\n    Script: Script\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -176
+      ],
+      "id": "0973f562-6860-4e1c-ac1c-4d7604b13fe4",
+      "name": "Merge Chapters to Final Script"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "createFromText",
+        "content": "={{ $json.Script }}",
+        "name": "=script-{{ $('trigger').first().json['Project Name'] }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "=scripts-folder-id",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        -384
+      ],
+      "id": "228a3e80-0706-424b-ba3b-77ed578ae365",
+      "name": "Upload Script",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "workspaceId": "wtu1usuc",
+        "projectId": "={{ $('trigger').first().json['Channel Base Name'] }}",
+        "table": "={{ $('trigger').first().json['Channel Table Name'] }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "Id",
+              "fieldValue": "={{ $('trigger').first().json.Id }}"
+            },
+            {
+              "fieldName": "Script",
+              "fieldValue": "={{ $('trigger').first().json['Storage Bucket PUBLIC URL'] }}{{ $('trigger').first().json['Overlay Path'] }}/scripts/script-{{ $('trigger').first().json['Project Name'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        128,
+        -176
+      ],
+      "id": "4f5d9bc9-3fbf-48a4-a2da-02f1ad9d5a4e",
+      "name": "Add Script URL to Row",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "JoY3JTA7ut2SRv1l",
+          "name": "German Family Drama - NocoDB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Prompt }}",
+        "options": {
+          "systemMessage": "Innerhalb dieses Chats wirst du eine volle Geschichte schreiben. Diese Geschichte wird insgesamt drei Kapitel lang sein. Mit jeder Nutzer-Nachricht schreibst du ein Kapitel. Nutze keine unbekannten Schreibweisen oder  Zeichen, da der Text am ende mithilfe einer Text-To-Speech Software vorgelesen wird und diese verwirrt werden könnte. Das erste Kapitel muss direkt innerhalb der Action starten. Also der erste Satz sollte Action beinhalten. Formattiere den Script nicht, also keine neuen Zeilen etc.. Nutze keine Schimpfwörter! Dein Output beinhaltet ausschliesslich pures Skript"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        64
+      ],
+      "id": "0fc0c598-ae97-4fbd-83be-faa2da6942ab",
+      "name": "Write Each Chapter",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "content": "## Prepare Input for German Story Generation",
+        "height": 208,
+        "width": 832,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1984,
+        -112
+      ],
+      "id": "14baac1c-dca7-42e1-be7c-a2cb00dbf85d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Generate German Story Structure & Prepare Input",
+        "height": 208,
+        "width": 640,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        -112
+      ],
+      "id": "6c6a38b8-1b3d-41e5-af5e-ecb506a1e50d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Write German Story",
+        "height": 384,
+        "width": 352,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        16
+      ],
+      "id": "f75af43d-cf65-435b-93cf-c2cd357aa2b3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Merge Chapters & Save Final Script",
+        "height": 208,
+        "width": 720,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -224
+      ],
+      "id": "3f548adf-1177-4497-9669-e8a103c7d59e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-flash-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        272
+      ],
+      "id": "d1eccd6e-f971-4180-a78c-51aaef52c8bb",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "jyPiseA5iZX10nrt",
+          "name": "German Family Drama - Google Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "={{ $('trigger').first().json['Bucket Name'] }}",
+        "fileName": "={{ $('trigger').first().json['Overlay Path'] }}/scripts/script-{{ $('trigger').first().json['Project Name'] }}",
+        "binaryData": false,
+        "fileContent": "={{ $json.Script }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -176
+      ],
+      "id": "fc9c425c-2b02-4369-89a3-0eceaedb51cb",
+      "name": "Upload a file",
+      "credentials": {
+        "s3": {
+          "id": "K3Ji1vSaw4y5ofv7",
+          "name": "German Family Drama - S3 account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "trigger": [
+      {
+        "json": {
+          "Transcript": "",
+          "Project Name": "video-description-learn-how-to-perfectly-season-a-steak-with-our-foolproof-method-for-maximum-flavor-we-cover-everything-from-salt-and-pepper-to-advanced-techniques-for-a-restaurant-quality-meal-at-home-perfect-steak-seasoning-foolproof-flavor-method",
+          "Channel Base Name": "p7903f0ck8ocsqt",
+          "Channel Table Name": "mgz8wkrrkbktpef",
+          "Id": "2",
+          "Bucket Name": "n8nt",
+          "Overlay Path": "german/family-drama/videos",
+          "Storage Bucket PUBLIC URL": "https://n8nt.mos.us-south-1.sufybkt.com/"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-21T11:10:36.880Z",
+      "createdAt": "2025-12-21T11:10:36.880Z",
+      "role": "workflow:owner",
+      "workflowId": "ohiEdp8uyihJp8lg",
+      "projectId": "Sz2vPJqZDAwEzZJp"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-12-22T16:26:37.213Z",
+  "versionId": "9062f30d-e4a8-46c0-bd23-db1edb5e0892"
+}
