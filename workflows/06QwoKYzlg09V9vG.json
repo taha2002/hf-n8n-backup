@@ -1,0 +1,637 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-21T16:46:10.743Z",
+    "createdAt": "2025-12-21T16:46:03.310Z",
+    "versionId": "5aefa6cb-6a8c-477d-8280-f72bc3a0824e",
+    "workflowId": "06QwoKYzlg09V9vG",
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -608,
+          152
+        ],
+        "id": "e8677e5f-c3c4-47ce-9c6c-6e06ad6ec0ce",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get all incoming items\nconst items = $input.all();\n\n// Take the first item (same behavior as your Python code)\nconst inputItem = items[0];\n\n// Access the captions array\nconst captionsList = inputItem.json.captions;\n\n// Extract only the `text` values\nconst textParts = captionsList.map(item => item.text);\n\n// Join into a single transcript\nconst fullTranscript = textParts.join(' ');\n\n// Return data in n8n format\nreturn [\n  {\n    json: {\n      Transcript: fullTranscript\n    }\n  }\n];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          288,
+          56
+        ],
+        "id": "c6892537-a8f6-42c5-9605-47a90f9995e1",
+        "name": "Remove Time Stamps"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://cors.uiisp.top?https://tactiq-apps-prod.tactiq.io/transcript",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "videoUrl",
+                "value": "={{ $json[\"Source Video URL\"] }}"
+              },
+              {
+                "name": "langCode",
+                "value": "en"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -384,
+          160
+        ],
+        "id": "c38fd8c1-c5fe-426e-b5ed-f6763785d702",
+        "name": "Get YT Transcript from URL",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "fe737471-f305-455f-b266-60979be737ac",
+                "name": "Summary",
+                "value": "={{ $json.Transcript?.split(' ').slice(0, 100).join(' ') ?? null }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          512,
+          -16
+        ],
+        "id": "afd8ba58-231a-4efb-9b6c-02059eea3ad9",
+        "name": "Summary (First 100 Words)"
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineByPosition",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          736,
+          128
+        ],
+        "id": "98aa2d03-0c62-42bd-9059-7e9d1b9770ee",
+        "name": "Output Transcript + Summary"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ $json }}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          960,
+          128
+        ],
+        "id": "cb92e934-a460-465d-bd61-b189b84e6ade",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "fe9922ed-4b4e-4481-ad07-2693ffee387e",
+                "leftValue": "={{ $json.error }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "object",
+                  "operation": "notExists",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -160,
+          160
+        ],
+        "id": "00c026e1-e1f1-4ff7-841c-487bc3945626",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://yt-to-text.com/api/v1/Subtitles",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "video_id",
+                "value": "={{ $('When Executed by Another Workflow').item.json['Source Video URL'].split(\"=\").pop() }}"
+              },
+              {
+                "name": "langCode",
+                "value": "en"
+              }
+            ]
+          },
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          64,
+          272
+        ],
+        "id": "0afaf483-4f79-49a9-9a86-f56e8b0ae7a2",
+        "name": "Get YT Transcript from URL1",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get all incoming items\nreturn $input.all().map(item => {\n  // Safely access transcripts array\n  const transcripts = item.json.data?.transcripts || [];\n\n  // Extract only the `t` (text) field\n  const textParts = transcripts.map(tr => tr.t);\n\n  // Join into one string\n  const fullTranscript = textParts.join(' ');\n\n  return {\n    json: {\n      Transcript: fullTranscript\n    }\n  };\n});\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          288,
+          272
+        ],
+        "id": "a5e2dd7f-7325-48b2-a01d-592c211e4019",
+        "name": "Code in JavaScript"
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Get YT Transcript from URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Remove Time Stamps": {
+        "main": [
+          [
+            {
+              "node": "Summary (First 100 Words)",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Output Transcript + Summary",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Get YT Transcript from URL": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Summary (First 100 Words)": {
+        "main": [
+          [
+            {
+              "node": "Output Transcript + Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Output Transcript + Summary": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Remove Time Stamps",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get YT Transcript from URL1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get YT Transcript from URL1": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Summary (First 100 Words)",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Output Transcript + Summary",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "taha bouras",
+    "name": "Version 5aefa6cb",
+    "description": ""
+  },
+  "activeVersionId": "5aefa6cb-6a8c-477d-8280-f72bc3a0824e",
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get YT Transcript from URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Time Stamps": {
+      "main": [
+        [
+          {
+            "node": "Summary (First 100 Words)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Output Transcript + Summary",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get YT Transcript from URL": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary (First 100 Words)": {
+      "main": [
+        [
+          {
+            "node": "Output Transcript + Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Transcript + Summary": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Remove Time Stamps",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get YT Transcript from URL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get YT Transcript from URL1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Summary (First 100 Words)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Output Transcript + Summary",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-21T11:12:18.456Z",
+  "id": "06QwoKYzlg09V9vG",
+  "isArchived": false,
+  "meta": null,
+  "name": "Transcript Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -608,
+        152
+      ],
+      "id": "e8677e5f-c3c4-47ce-9c6c-6e06ad6ec0ce",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all incoming items\nconst items = $input.all();\n\n// Take the first item (same behavior as your Python code)\nconst inputItem = items[0];\n\n// Access the captions array\nconst captionsList = inputItem.json.captions;\n\n// Extract only the `text` values\nconst textParts = captionsList.map(item => item.text);\n\n// Join into a single transcript\nconst fullTranscript = textParts.join(' ');\n\n// Return data in n8n format\nreturn [\n  {\n    json: {\n      Transcript: fullTranscript\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        56
+      ],
+      "id": "c6892537-a8f6-42c5-9605-47a90f9995e1",
+      "name": "Remove Time Stamps"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cors.uiisp.top?https://tactiq-apps-prod.tactiq.io/transcript",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "videoUrl",
+              "value": "={{ $json[\"Source Video URL\"] }}"
+            },
+            {
+              "name": "langCode",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        160
+      ],
+      "id": "c38fd8c1-c5fe-426e-b5ed-f6763785d702",
+      "name": "Get YT Transcript from URL",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fe737471-f305-455f-b266-60979be737ac",
+              "name": "Summary",
+              "value": "={{ $json.Transcript?.split(' ').slice(0, 100).join(' ') ?? null }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        -16
+      ],
+      "id": "afd8ba58-231a-4efb-9b6c-02059eea3ad9",
+      "name": "Summary (First 100 Words)"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        736,
+        128
+      ],
+      "id": "98aa2d03-0c62-42bd-9059-7e9d1b9770ee",
+      "name": "Output Transcript + Summary"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        128
+      ],
+      "id": "cb92e934-a460-465d-bd61-b189b84e6ade",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fe9922ed-4b4e-4481-ad07-2693ffee387e",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -160,
+        160
+      ],
+      "id": "00c026e1-e1f1-4ff7-841c-487bc3945626",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://yt-to-text.com/api/v1/Subtitles",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "video_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json['Source Video URL'].split(\"=\").pop() }}"
+            },
+            {
+              "name": "langCode",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64,
+        272
+      ],
+      "id": "0afaf483-4f79-49a9-9a86-f56e8b0ae7a2",
+      "name": "Get YT Transcript from URL1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all incoming items\nreturn $input.all().map(item => {\n  // Safely access transcripts array\n  const transcripts = item.json.data?.transcripts || [];\n\n  // Extract only the `t` (text) field\n  const textParts = transcripts.map(tr => tr.t);\n\n  // Join into one string\n  const fullTranscript = textParts.join(' ');\n\n  return {\n    json: {\n      Transcript: fullTranscript\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        272
+      ],
+      "id": "a5e2dd7f-7325-48b2-a01d-592c211e4019",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "Source Video URL": "https://www.youtube.com/watch?v=drONr2cMvbs"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-21T11:12:18.456Z",
+      "createdAt": "2025-12-21T11:12:18.456Z",
+      "role": "workflow:owner",
+      "workflowId": "06QwoKYzlg09V9vG",
+      "projectId": "Sz2vPJqZDAwEzZJp"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-12-21T16:46:03.203Z",
+  "versionId": "5aefa6cb-6a8c-477d-8280-f72bc3a0824e"
+}
