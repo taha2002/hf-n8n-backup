@@ -1,9 +1,9 @@
 {
   "active": true,
   "activeVersion": {
-    "updatedAt": "2025-12-24T10:51:02.855Z",
-    "createdAt": "2025-12-24T10:50:30.943Z",
-    "versionId": "3c89010f-92df-4dc3-9c7a-dd7ec8f93b10",
+    "updatedAt": "2025-12-24T12:20:27.094Z",
+    "createdAt": "2025-12-24T12:20:16.450Z",
+    "versionId": "2b640bf4-a784-4821-b8c3-7dc8cb61a42d",
     "workflowId": "2aesKjEvGW5xQXCY",
     "nodes": [
       {
@@ -306,7 +306,7 @@
             "interval": [
               {
                 "field": "hours",
-                "hoursInterval": 2
+                "hoursInterval": 24
               }
             ]
           }
@@ -723,10 +723,10 @@
       }
     },
     "authors": "taha bouras",
-    "name": "Version 3c89010f",
+    "name": "Version 2b640bf4",
     "description": ""
   },
-  "activeVersionId": "3c89010f-92df-4dc3-9c7a-dd7ec8f93b10",
+  "activeVersionId": "2b640bf4-a784-4821-b8c3-7dc8cb61a42d",
   "connections": {
     "n8n": {
       "main": [
@@ -1262,7 +1262,7 @@
           "interval": [
             {
               "field": "hours",
-              "hoursInterval": 2
+              "hoursInterval": 24
             }
           ]
         }
@@ -1466,11 +1466,13 @@
   ],
   "staticData": {
     "node:Schedule Trigger": {
-      "recurrenceRules": []
+      "recurrenceRules": [
+        0
+      ]
     }
   },
   "tags": [],
   "triggerCount": 1,
-  "updatedAt": "2025-12-24T10:50:30.836Z",
-  "versionId": "3c89010f-92df-4dc3-9c7a-dd7ec8f93b10"
+  "updatedAt": "2025-12-24T12:20:15.918Z",
+  "versionId": "2b640bf4-a784-4821-b8c3-7dc8cb61a42d"
 }
