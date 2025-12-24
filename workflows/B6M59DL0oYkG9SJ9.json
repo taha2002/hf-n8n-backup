@@ -1,0 +1,390 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-22T21:24:18.591Z",
+    "createdAt": "2025-12-22T21:24:09.924Z",
+    "versionId": "4217d7c2-44e3-42c5-ad14-dea843afcfaf",
+    "workflowId": "B6M59DL0oYkG9SJ9",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          1008,
+          272
+        ],
+        "id": "88b65b1c-b82a-4129-82b2-f55457e3607b",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.url }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1456,
+          368
+        ],
+        "id": "184c7faf-acb5-4df2-8766-a0bcc6293e8a",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "resource": "video",
+          "operation": "upload",
+          "title": "Er ließ mich nach dem UNFALL im Stich – Seine „Entschuldigung“ war ein Eimer voll DRECK!",
+          "regionCode": "DE",
+          "categoryId": "22",
+          "options": {
+            "defaultLanguage": "de",
+            "description": "Stell dir vor, du liegst nach einem schweren Unfall hilflos im Krankenhaus – und der Mensch, dem du vertraut hast, lässt dich völlig allein. Genau das ist mir mit Richard passiert.  Vier Jahre lang hat er bei mir gewohnt, keine Miete gezahlt, mein Auto benutzt und mich finanziell ausgenutzt. Als ich nach einem Unfall mit Metallstiften im Bein im Krankenhaus lag, weigerte er sich sogar, mich zu besuchen. Stattdessen kümmerte er sich nur um sich selbst.  Seine letzte „Geste“ sprengt alles: ein Eimer voller Kompost und ein billiger Plastikring – als Symbol unserer Beziehung. Doch während er dachte, mich zurückzugewinnen, begann für mich ein neuer Lebensabschnitt voller Freiheit, Stärke und Gerechtigkeit.  Diese wahre Geschichte handelt von toxischen Beziehungen, finanzieller Ausbeutung, weiblicher Stärke und dem Moment, in dem Karma endlich zuschlägt.  👉 Was hättest DU getan?   Hättest du ihm nach dieser Kompost-„Entschuldigung“ noch eine Chance gegeben – oder sofort einen Schlussstrich gezogen? Schreib deine Meinung in die Kommentare, ich lese und beantworte sie!  🔔 Abonniere „Verborgene Schicksale“ für tägliche wahre Geschichten, Karma-Momente und emotionale Erzählungen im Hörbuch-Stil.  #WahreGeschichten #RedditGeschichtenDeutsch #Gerechtigkeit #ToxischeBeziehung #Karma #Hörbuch",
+            "privacyStatus": "private"
+          }
+        },
+        "type": "n8n-nodes-base.youTube",
+        "typeVersion": 1,
+        "position": [
+          1680,
+          368
+        ],
+        "id": "984ac6df-5889-42a8-815b-00a21dd1624c",
+        "name": "Upload a video",
+        "credentials": {
+          "youTubeOAuth2Api": {
+            "id": "kaQB7VxCU5r3Hfl4",
+            "name": "YouTube account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "74191e5b-cc97-4fc3-bd3a-4b63c1babd2f",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          1008,
+          464
+        ],
+        "id": "88373a69-f5aa-4348-baa8-e79ac202bf56",
+        "name": "Webhook",
+        "webhookId": "74191e5b-cc97-4fc3-bd3a-4b63c1babd2f"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "9e43dfc0-e9c2-4b58-9a44-0f123f6014f2",
+                "name": "url",
+                "value": "https://n8nt.mos.us-south-1.sufybkt.com/german/family-drama/videos/video-description-learn-how-to-perfectly-season-a-steak-with-our-foolproof-method-for-maximum-flavor-we-cover-everything-from-salt-and-pepper-to-advanced-techniques-for-a-restaurant-quality-meal-at-home-perfect-steak-seasoning-foolproof-flavor-method/video-description-learn-how-to-perfectly-season-a-steak-with-our-foolproof-method-for-maximum-flavor-we-cover-everything-from-salt-and-pepper-to-advanced-techniques-for-a-restaurant-quality-meal-at-home-perfect-steak-seasoning-foolproof-flavor-method.mp4",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1232,
+          272
+        ],
+        "id": "b9191485-e054-49e0-83f0-822dad3b2b9c",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "8bba84fe-cc80-4b1b-9d16-1a5297ddabd3",
+                "name": "url",
+                "value": "={{ $json.body.url }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1232,
+          464
+        ],
+        "id": "b6a2e06d-51e0-4c16-b55f-ee0b0a771a92",
+        "name": "Edit Fields1"
+      }
+    ],
+    "connections": {
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Upload a video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "taha bouras",
+    "name": "Version 4217d7c2",
+    "description": ""
+  },
+  "activeVersionId": "4217d7c2-44e3-42c5-ad14-dea843afcfaf",
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Upload a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-22T17:44:58.223Z",
+  "id": "B6M59DL0oYkG9SJ9",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "yt upload",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        272
+      ],
+      "id": "88b65b1c-b82a-4129-82b2-f55457e3607b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1456,
+        368
+      ],
+      "id": "184c7faf-acb5-4df2-8766-a0bcc6293e8a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "Er ließ mich nach dem UNFALL im Stich – Seine „Entschuldigung“ war ein Eimer voll DRECK!",
+        "regionCode": "DE",
+        "categoryId": "22",
+        "options": {
+          "defaultLanguage": "de",
+          "description": "Stell dir vor, du liegst nach einem schweren Unfall hilflos im Krankenhaus – und der Mensch, dem du vertraut hast, lässt dich völlig allein. Genau das ist mir mit Richard passiert.  Vier Jahre lang hat er bei mir gewohnt, keine Miete gezahlt, mein Auto benutzt und mich finanziell ausgenutzt. Als ich nach einem Unfall mit Metallstiften im Bein im Krankenhaus lag, weigerte er sich sogar, mich zu besuchen. Stattdessen kümmerte er sich nur um sich selbst.  Seine letzte „Geste“ sprengt alles: ein Eimer voller Kompost und ein billiger Plastikring – als Symbol unserer Beziehung. Doch während er dachte, mich zurückzugewinnen, begann für mich ein neuer Lebensabschnitt voller Freiheit, Stärke und Gerechtigkeit.  Diese wahre Geschichte handelt von toxischen Beziehungen, finanzieller Ausbeutung, weiblicher Stärke und dem Moment, in dem Karma endlich zuschlägt.  👉 Was hättest DU getan?   Hättest du ihm nach dieser Kompost-„Entschuldigung“ noch eine Chance gegeben – oder sofort einen Schlussstrich gezogen? Schreib deine Meinung in die Kommentare, ich lese und beantworte sie!  🔔 Abonniere „Verborgene Schicksale“ für tägliche wahre Geschichten, Karma-Momente und emotionale Erzählungen im Hörbuch-Stil.  #WahreGeschichten #RedditGeschichtenDeutsch #Gerechtigkeit #ToxischeBeziehung #Karma #Hörbuch",
+          "privacyStatus": "private"
+        }
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        368
+      ],
+      "id": "984ac6df-5889-42a8-815b-00a21dd1624c",
+      "name": "Upload a video",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "kaQB7VxCU5r3Hfl4",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "74191e5b-cc97-4fc3-bd3a-4b63c1babd2f",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1008,
+        464
+      ],
+      "id": "88373a69-f5aa-4348-baa8-e79ac202bf56",
+      "name": "Webhook",
+      "webhookId": "74191e5b-cc97-4fc3-bd3a-4b63c1babd2f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9e43dfc0-e9c2-4b58-9a44-0f123f6014f2",
+              "name": "url",
+              "value": "https://n8nt.mos.us-south-1.sufybkt.com/german/family-drama/videos/video-description-learn-how-to-perfectly-season-a-steak-with-our-foolproof-method-for-maximum-flavor-we-cover-everything-from-salt-and-pepper-to-advanced-techniques-for-a-restaurant-quality-meal-at-home-perfect-steak-seasoning-foolproof-flavor-method/video-description-learn-how-to-perfectly-season-a-steak-with-our-foolproof-method-for-maximum-flavor-we-cover-everything-from-salt-and-pepper-to-advanced-techniques-for-a-restaurant-quality-meal-at-home-perfect-steak-seasoning-foolproof-flavor-method.mp4",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        272
+      ],
+      "id": "b9191485-e054-49e0-83f0-822dad3b2b9c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8bba84fe-cc80-4b1b-9d16-1a5297ddabd3",
+              "name": "url",
+              "value": "={{ $json.body.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        464
+      ],
+      "id": "b6a2e06d-51e0-4c16-b55f-ee0b0a771a92",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "saveExecutionProgress": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-22T17:44:58.223Z",
+      "createdAt": "2025-12-22T17:44:58.223Z",
+      "role": "workflow:owner",
+      "workflowId": "B6M59DL0oYkG9SJ9",
+      "projectId": "Sz2vPJqZDAwEzZJp"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-22T21:24:09.806Z",
+  "versionId": "4217d7c2-44e3-42c5-ad14-dea843afcfaf"
+}
