@@ -1,0 +1,1808 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-23T08:21:04.737Z",
+    "createdAt": "2025-12-23T08:20:55.179Z",
+    "versionId": "522fcc31-3833-4593-8d2b-5719abcd9fd9",
+    "workflowId": "ripjeA9XmT5mU8KH",
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -832,
+          512
+        ],
+        "id": "86dfa881-08d0-4284-91dd-6e8653e0f2b2",
+        "name": "Loop Over Items",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 6
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -1344,
+          512
+        ],
+        "id": "c92b86b6-ca86-4752-af9c-d277cc0cf81a",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "aggregate": "aggregateAllItemData",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          -720,
+          288
+        ],
+        "id": "b2841567-05aa-4687-8d43-6462dcd0204e",
+        "name": "Aggregate"
+      },
+      {
+        "parameters": {
+          "aggregate": "aggregateAllItemData",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          352,
+          272
+        ],
+        "id": "57463218-ca99-4097-a150-85b816ee9a7d",
+        "name": "Aggregate1"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -1344,
+          352
+        ],
+        "id": "d1498ded-d855-48fe-b1c5-ef1eebc667ba",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "url": "https://tahabou2002-myauntsgts.hf.space/webhook/bde9cf17-a83b-4eed-86f5-3177313910e2111454754",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "auth",
+                "value": "Tahabou"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1264,
+          176
+        ],
+        "id": "b8ba76ac-6f40-4fe0-8371-caf4eadac84f",
+        "name": "Start Video Production"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          1072,
+          176
+        ],
+        "id": "60474dd8-dcea-4c97-a9cb-da027f171c0b",
+        "name": "1 Item"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          768,
+          192
+        ],
+        "id": "9046e6c6-f953-4690-86de-87038e77ba0b",
+        "name": "Loop Through Viral Urls"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "update",
+          "workspaceId": "wtu1usuc",
+          "projectId": "=p7903f0ck8ocsqt",
+          "table": "=mgz8wkrrkbktpef",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "Id",
+                "fieldValue": "={{ $json.Id }}"
+              },
+              {
+                "fieldName": "Source Video URL",
+                "fieldValue": "={{ $json.url }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          928,
+          256
+        ],
+        "id": "e8a4fbef-5400-45e5-85c1-e2309308fb2f",
+        "name": "Add Viral URLS to Sheet",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "JoY3JTA7ut2SRv1l",
+            "name": "German Family Drama - NocoDB"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineByPosition",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          608,
+          -16
+        ],
+        "id": "6a91aa25-d629-4024-9484-62f29c14abd7",
+        "name": "Merge Each URL with Row ID"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Run Once for All Items - filters videos and outputs only URLs\nconst NOW = new Date(); // current execution time\n\nfunction hoursSince(dateIso) {\n  const d = new Date(dateIso);\n  if (isNaN(d.getTime())) return Infinity; // invalid date won't pass time-based rule\n  return (NOW - d) / 36e5; // ms to hours\n}\n\nfunction passes(video) {\n  const views = Number(video?.views ?? 0);\n  const ageH = hoursSince(video?.published);\n  const viewsPerHour = ageH > 0 ? views / ageH : 0;\n\n  // ───────── NEW / FAST VIRAL (≤ 48h) ─────────\n  if (ageH <= 48) {\n    if (views > 7000) return true;\n    if (views >= 4000 && ageH <= 12) return true;\n  }\n\n  if (ageH > 48) {\n  // 1️⃣ Strong momentum (already viral)\n  if (views >= 25000 && viewsPerHour >= 100) return true;\n\n  // 2️⃣ Slow-burn breakout (still growing)\n  if (views >= 15000 && viewsPerHour >= 50) return true;\n\n  // 3️⃣ Evergreen hit (big total views, lower velocity OK)\n  if (views >= 100000 && viewsPerHour >= 20) return true;\n\n  // 4️⃣ Late spike detector (old but suddenly hot)\n  if (views >= 20000 && viewsPerHour >= 80 && ageH <= 168) return true; // ≤ 7 days old\n}\n  \n  return false;\n}\n\n// Get the data array from the first item\nconst input = items[0].json ?? items[0];\nconst data = Array.isArray(input.data) ? input.data : [];\n\n// Filter and map to URLs in one step\nconst filtered = data.filter(passes);\n\nreturn filtered.map(video => {\n  return {\n    json: {\n      url: video.url\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -288,
+          288
+        ],
+        "id": "8e0a1b43-4150-4659-a1d5-a3a75361dbf4",
+        "name": "Filter for Viral Videos"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Input: Das geparste JSON aus der XML Node (items[0].json)\nconst feed = items[0].json.feed;  // Oder passe an, falls der Pfad anders ist\nconst entries = feed.entry || [];  // Array der Videos\n\n// Extrahiere und mappe die Daten\nconst extractedVideos = entries.map(entry => {\n  return {\n    url: entry.link.href || '',  // Video-URL (im Beispiel ist es ein Objekt ohne @, also .href)\n    title: entry.title || '',  // Titel\n    views: parseInt(entry['media:group']['media:community']['media:statistics'].views || 0, 10),  // Aufrufe als Number (im Beispiel ohne @, direkt 'views')\n    published: entry.published || ''  // Upload-Datum (ISO-Format)\n  };\n});\n\n// Sortierung nach Published absteigend (neueste Videos zuerst)\nextractedVideos.sort((a, b) => new Date(b.published) - new Date(a.published));\n\n// Output als n8n-kompatibles Array (jeder Eintrag als separates Item)\nreturn extractedVideos.map(video => ({ json: video }));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          32,
+          528
+        ],
+        "id": "5090b18c-456d-46f1-a88b-5d1580def17d",
+        "name": "Clean Up Data"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "getAll",
+          "workspaceId": "wtu1usuc",
+          "projectId": "=p7903f0ck8ocsqt",
+          "table": "=mgz8wkrrkbktpef",
+          "returnAll": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          -352,
+          112
+        ],
+        "id": "33032add-4656-4429-bdb0-75b56af61da3",
+        "name": "Get All Rows from Channel Sheet",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "JoY3JTA7ut2SRv1l",
+            "name": "German Family Drama - NocoDB"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "['Source Video URL']",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          -160,
+          112
+        ],
+        "id": "a35bb968-128a-485c-929d-b837ee02027c",
+        "name": "Only Output YT Links"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "3b49d242-91ea-4b66-8830-2094894f96bd",
+                "leftValue": "={{ $json['[\\'Source Video URL\\']'] }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          32,
+          112
+        ],
+        "id": "4ad4ed43-ede9-4f6d-b659-69391a4fea8b",
+        "name": "Remove Empty Fields"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          192,
+          272
+        ],
+        "id": "76f912e3-2789-44fa-b852-47bd35cf4dd3",
+        "name": "Merge Viral & Existing YT Links"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Access the input data from the first item\nconst inputData = items[0].json.data;\n\n// Collect existing YT links into a Set for quick lookup and uniqueness\nconst existingLinks = new Set();\nconst newUrls = [];\n\n// Iterate through the data array to separate existing and new URLs\nfor (const obj of inputData) {\n  if (obj[\"['Source Video URL']\"]) {\n    existingLinks.add(obj[\"['Source Video URL']\"]);\n  } else if (obj.url) {\n    newUrls.push(obj.url);\n  }\n}\n\n// Filter new URLs to remove those that exist in the database links,\n// then use a Set to deduplicate any remaining doubles among new URLs\nconst filteredUniqueNew = new Set(newUrls.filter(url => !existingLinks.has(url)));\n\n// Return the filtered unique new URLs as an array of items\nreturn [...filteredUniqueNew].map(url => ({ json: { url } }));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          496,
+          272
+        ],
+        "id": "980e36be-a060-4ba8-a80f-b9361653b0b8",
+        "name": "Only Output Viral, Unique Videos"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ab8f5bc3-9cf0-403e-9bdb-15bc81b168a7",
+                "name": "@GraphikDesign",
+                "value": "UCtTk5b2ELWkDFyUPyKrDGgA",
+                "type": "string"
+              },
+              {
+                "id": "5daed8dc-1ac0-400a-b838-1e6f40963443",
+                "name": "@RevengeAlley",
+                "value": "UCI7oIyyURJtBIIgI-GwZ7mw",
+                "type": "string"
+              },
+              {
+                "id": "f49c7792-d11f-4440-950b-efac47a6d4b8",
+                "name": "@FamilialStoriesExposed",
+                "value": "UC60xvMREnA987PsDybyIZoQ",
+                "type": "string"
+              },
+              {
+                "id": "4302ee31-3b7c-465a-92bd-dffdce37fe6e",
+                "name": "TheFinalRevenge",
+                "value": "UCvsCt-xWLqJmoMu15dM119g",
+                "type": "string"
+              },
+              {
+                "id": "ba9e1aa5-e798-4e10-977f-b215effcc170",
+                "name": "@RedditDramaTales",
+                "value": "UCgXdUudweJwnLvFositr_3g",
+                "type": "string"
+              },
+              {
+                "id": "119e4aad-38df-4d1d-a71d-aeb2d1c238a6",
+                "name": "@TeddyRedditStories",
+                "value": "UC_jjQIb6uPeDaI2nIXl0rIg",
+                "type": "string"
+              },
+              {
+                "id": "4aa9e5cd-74e0-461e-8c17-5f9e0b13440c",
+                "name": "@LimerenceReddit",
+                "value": "UCahTcbP_D1wTfx7LUVYsQtA",
+                "type": "string"
+              },
+              {
+                "id": "412f1798-a04a-4d55-b57c-df0a9cf64b0b",
+                "name": "@TwistedFamilyStories",
+                "value": "UCvhmlkvdg7DdlIHJ9l276Eg",
+                "type": "string"
+              },
+              {
+                "id": "64234349-2795-4682-88b2-1a217acbd6f5",
+                "name": "@FamilyRedditTales",
+                "value": "UC_nKsgHFlHsneWDKED0nAFw",
+                "type": "string"
+              },
+              {
+                "id": "344b1c92-651f-464b-bb8b-1f96a0725ff8",
+                "name": "@paybackties-h6f",
+                "value": "UC2FSYExfUywE3Ks7lbBq2Qg",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1168,
+          512
+        ],
+        "id": "781febfd-2e7a-4764-a0f0-beede7efafc5",
+        "name": "Viral Revenge Channels"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get the input object (first item)\nconst inputObj = items[0].json;\n\n// Extract all channel IDs (values) and create separate items\nconst channelIds = Object.values(inputObj);\n\nreturn channelIds.map(channelId => {\n  return {\n    json: {\n      \"channel-id\": channelId\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1008,
+          512
+        ],
+        "id": "371c1f36-2b88-40f7-8394-687fed081164",
+        "name": "Fix Format"
+      },
+      {
+        "parameters": {
+          "url": "=https://cors.uiisp.top?https://www.youtube.com/feeds/videos.xml?channel_id={{ $json['channel-id'] }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -656,
+          528
+        ],
+        "id": "2c231931-bdd0-4aa3-a86f-e46203a58662",
+        "name": "Get Latest Upload Data",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.xml",
+        "typeVersion": 1,
+        "position": [
+          -144,
+          528
+        ],
+        "id": "dfcb21fc-f5ba-4b8b-8ced-87e960923abe",
+        "name": "Format XML -> JSON"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          192,
+          528
+        ],
+        "id": "93298024-28b2-4c43-8ab0-185ec9351819",
+        "name": "Wait 5s",
+        "webhookId": "53a9a794-a37a-44ed-b301-87014d867adf"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "392830aa-ab4c-48bd-bcdb-a5368244317f",
+                "leftValue": "={{ $json['Source Video URL'] }}",
+                "rightValue": "Queued",
+                "operator": {
+                  "type": "string",
+                  "operation": "empty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          -48,
+          -32
+        ],
+        "id": "433c858c-4199-400f-826c-736e1efe32b9",
+        "name": "Get Empty Fields",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "content": "## Scrape Channel Uploads",
+          "height": 272,
+          "width": 1360,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1200,
+          464
+        ],
+        "id": "b714f625-73fa-4cbc-87e8-70310846baec",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Filter for Viral & Unique YT-Urls",
+          "height": 384,
+          "width": 1216,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -736,
+          64
+        ],
+        "id": "e26d527d-ffee-449f-85f3-a09d95458b5a",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Add Viral Videos to Sheet",
+          "height": 304,
+          "width": 720,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          496,
+          144
+        ],
+        "id": "ae160053-7f69-438c-8ee8-83dc36f1712a",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "def98027-dc23-480c-ab81-b6735e8ba579",
+                "leftValue": "={{ $json.error }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "object",
+                  "operation": "notExists",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -448,
+          528
+        ],
+        "id": "e024a324-b5f3-4ab0-ae3d-2cf71704e64c",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "path": "ba87a905-4c1c-4741-8e28-92b325ff88a0",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -1344,
+          688
+        ],
+        "id": "cb071c87-c595-413b-b42f-b095713d9069",
+        "name": "Webhook",
+        "webhookId": "ba87a905-4c1c-4741-8e28-92b325ff88a0"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Run Once for All Items - filters videos and outputs only URLs\nconst NOW = new Date(); // current execution time\n\nfunction hoursSince(dateIso) {\n  const d = new Date(dateIso);\n  if (isNaN(d.getTime())) return Infinity; // invalid date won't pass time-based rule\n  return (NOW - d) / 36e5; // ms to hours\n}\n\nfunction passes(video) {\n  const views = Number(video?.views ?? 0);\n  const ageH = hoursSince(video?.published);\n  // New filter: exclude videos older than 48 hours (2 days)\n  if (ageH > 48) return false;\n  // Rule A: any age (within 48h), strictly more than 9,000 total views\n  if (views > 7000) return true;\n  // Rule B: otherwise, at least 4,000 views within first 8 hours\n  if (views >= 4000 && ageH <= 12) return true;\n  return false;\n}\n\n// Get the data array from the first item\nconst input = items[0].json ?? items[0];\nconst data = Array.isArray(input.data) ? input.data : [];\n\n// Filter and map to URLs in one step\nconst filtered = data.filter(passes);\n\nreturn filtered.map(video => {\n  return {\n    json: {\n      url: video.url\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -288,
+          -144
+        ],
+        "id": "06710533-b506-4483-b056-fddda320e16b",
+        "name": "Filter for Viral Videos OLD"
+      }
+    ],
+    "connections": {
+      "Loop Over Items": {
+        "main": [
+          [
+            {
+              "node": "Aggregate",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get Latest Upload Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Viral Revenge Channels",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate": {
+        "main": [
+          [
+            {
+              "node": "Filter for Viral Videos",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get All Rows from Channel Sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate1": {
+        "main": [
+          [
+            {
+              "node": "Only Output Viral, Unique Videos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Viral Revenge Channels",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "1 Item": {
+        "main": [
+          [
+            {
+              "node": "Start Video Production",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Through Viral Urls": {
+        "main": [
+          [
+            {
+              "node": "1 Item",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Add Viral URLS to Sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Viral URLS to Sheet": {
+        "main": [
+          [
+            {
+              "node": "Loop Through Viral Urls",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Each URL with Row ID": {
+        "main": [
+          [
+            {
+              "node": "Loop Through Viral Urls",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter for Viral Videos": {
+        "main": [
+          [
+            {
+              "node": "Merge Viral & Existing YT Links",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Clean Up Data": {
+        "main": [
+          [
+            {
+              "node": "Wait 5s",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get All Rows from Channel Sheet": {
+        "main": [
+          [
+            {
+              "node": "Only Output YT Links",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get Empty Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Only Output YT Links": {
+        "main": [
+          [
+            {
+              "node": "Remove Empty Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Remove Empty Fields": {
+        "main": [
+          [
+            {
+              "node": "Merge Viral & Existing YT Links",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Viral & Existing YT Links": {
+        "main": [
+          [
+            {
+              "node": "Aggregate1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Only Output Viral, Unique Videos": {
+        "main": [
+          [
+            {
+              "node": "Merge Each URL with Row ID",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Viral Revenge Channels": {
+        "main": [
+          [
+            {
+              "node": "Fix Format",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fix Format": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Latest Upload Data": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format XML -> JSON": {
+        "main": [
+          [
+            {
+              "node": "Clean Up Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait 5s": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Empty Fields": {
+        "main": [
+          [
+            {
+              "node": "Merge Each URL with Row ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Format XML -> JSON",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Viral Revenge Channels",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "taha bouras",
+    "name": "Version 522fcc31",
+    "description": ""
+  },
+  "activeVersionId": "522fcc31-3833-4593-8d2b-5719abcd9fd9",
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Latest Upload Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Viral Revenge Channels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Filter for Viral Videos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get All Rows from Channel Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Only Output Viral, Unique Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Viral Revenge Channels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1 Item": {
+      "main": [
+        [
+          {
+            "node": "Start Video Production",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Through Viral Urls": {
+      "main": [
+        [
+          {
+            "node": "1 Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Viral URLS to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Viral URLS to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Through Viral Urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Each URL with Row ID": {
+      "main": [
+        [
+          {
+            "node": "Loop Through Viral Urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter for Viral Videos": {
+      "main": [
+        [
+          {
+            "node": "Merge Viral & Existing YT Links",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Clean Up Data": {
+      "main": [
+        [
+          {
+            "node": "Wait 5s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Rows from Channel Sheet": {
+      "main": [
+        [
+          {
+            "node": "Only Output YT Links",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Empty Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only Output YT Links": {
+      "main": [
+        [
+          {
+            "node": "Remove Empty Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Empty Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge Viral & Existing YT Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Viral & Existing YT Links": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only Output Viral, Unique Videos": {
+      "main": [
+        [
+          {
+            "node": "Merge Each URL with Row ID",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Viral Revenge Channels": {
+      "main": [
+        [
+          {
+            "node": "Fix Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Format": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Upload Data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format XML -> JSON": {
+      "main": [
+        [
+          {
+            "node": "Clean Up Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Empty Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge Each URL with Row ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Format XML -> JSON",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Viral Revenge Channels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-21T11:09:17.383Z",
+  "id": "ripjeA9XmT5mU8KH",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "0. Idea Scraper Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -832,
+        512
+      ],
+      "id": "86dfa881-08d0-4284-91dd-6e8653e0f2b2",
+      "name": "Loop Over Items",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1344,
+        512
+      ],
+      "id": "c92b86b6-ca86-4752-af9c-d277cc0cf81a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        288
+      ],
+      "id": "b2841567-05aa-4687-8d43-6462dcd0204e",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        352,
+        272
+      ],
+      "id": "57463218-ca99-4097-a150-85b816ee9a7d",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        352
+      ],
+      "id": "d1498ded-d855-48fe-b1c5-ef1eebc667ba",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://tahabou2002-myauntsgts.hf.space/webhook/bde9cf17-a83b-4eed-86f5-3177313910e2111454754",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "auth",
+              "value": "Tahabou"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1264,
+        176
+      ],
+      "id": "b8ba76ac-6f40-4fe0-8371-caf4eadac84f",
+      "name": "Start Video Production"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        176
+      ],
+      "id": "60474dd8-dcea-4c97-a9cb-da027f171c0b",
+      "name": "1 Item"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        768,
+        192
+      ],
+      "id": "9046e6c6-f953-4690-86de-87038e77ba0b",
+      "name": "Loop Through Viral Urls"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "workspaceId": "wtu1usuc",
+        "projectId": "=p7903f0ck8ocsqt",
+        "table": "=mgz8wkrrkbktpef",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "Id",
+              "fieldValue": "={{ $json.Id }}"
+            },
+            {
+              "fieldName": "Source Video URL",
+              "fieldValue": "={{ $json.url }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        928,
+        256
+      ],
+      "id": "e8a4fbef-5400-45e5-85c1-e2309308fb2f",
+      "name": "Add Viral URLS to Sheet",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "JoY3JTA7ut2SRv1l",
+          "name": "German Family Drama - NocoDB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        -16
+      ],
+      "id": "6a91aa25-d629-4024-9484-62f29c14abd7",
+      "name": "Merge Each URL with Row ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Run Once for All Items - filters videos and outputs only URLs\nconst NOW = new Date(); // current execution time\n\nfunction hoursSince(dateIso) {\n  const d = new Date(dateIso);\n  if (isNaN(d.getTime())) return Infinity; // invalid date won't pass time-based rule\n  return (NOW - d) / 36e5; // ms to hours\n}\n\nfunction passes(video) {\n  const views = Number(video?.views ?? 0);\n  const ageH = hoursSince(video?.published);\n  const viewsPerHour = ageH > 0 ? views / ageH : 0;\n\n  // ───────── NEW / FAST VIRAL (≤ 48h) ─────────\n  if (ageH <= 48) {\n    if (views > 7000) return true;\n    if (views >= 4000 && ageH <= 12) return true;\n  }\n\n  if (ageH > 48) {\n  // 1️⃣ Strong momentum (already viral)\n  if (views >= 25000 && viewsPerHour >= 100) return true;\n\n  // 2️⃣ Slow-burn breakout (still growing)\n  if (views >= 15000 && viewsPerHour >= 50) return true;\n\n  // 3️⃣ Evergreen hit (big total views, lower velocity OK)\n  if (views >= 100000 && viewsPerHour >= 20) return true;\n\n  // 4️⃣ Late spike detector (old but suddenly hot)\n  if (views >= 20000 && viewsPerHour >= 80 && ageH <= 168) return true; // ≤ 7 days old\n}\n  \n  return false;\n}\n\n// Get the data array from the first item\nconst input = items[0].json ?? items[0];\nconst data = Array.isArray(input.data) ? input.data : [];\n\n// Filter and map to URLs in one step\nconst filtered = data.filter(passes);\n\nreturn filtered.map(video => {\n  return {\n    json: {\n      url: video.url\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        288
+      ],
+      "id": "8e0a1b43-4150-4659-a1d5-a3a75361dbf4",
+      "name": "Filter for Viral Videos"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: Das geparste JSON aus der XML Node (items[0].json)\nconst feed = items[0].json.feed;  // Oder passe an, falls der Pfad anders ist\nconst entries = feed.entry || [];  // Array der Videos\n\n// Extrahiere und mappe die Daten\nconst extractedVideos = entries.map(entry => {\n  return {\n    url: entry.link.href || '',  // Video-URL (im Beispiel ist es ein Objekt ohne @, also .href)\n    title: entry.title || '',  // Titel\n    views: parseInt(entry['media:group']['media:community']['media:statistics'].views || 0, 10),  // Aufrufe als Number (im Beispiel ohne @, direkt 'views')\n    published: entry.published || ''  // Upload-Datum (ISO-Format)\n  };\n});\n\n// Sortierung nach Published absteigend (neueste Videos zuerst)\nextractedVideos.sort((a, b) => new Date(b.published) - new Date(a.published));\n\n// Output als n8n-kompatibles Array (jeder Eintrag als separates Item)\nreturn extractedVideos.map(video => ({ json: video }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        528
+      ],
+      "id": "5090b18c-456d-46f1-a88b-5d1580def17d",
+      "name": "Clean Up Data"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "workspaceId": "wtu1usuc",
+        "projectId": "=p7903f0ck8ocsqt",
+        "table": "=mgz8wkrrkbktpef",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -352,
+        112
+      ],
+      "id": "33032add-4656-4429-bdb0-75b56af61da3",
+      "name": "Get All Rows from Channel Sheet",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "JoY3JTA7ut2SRv1l",
+          "name": "German Family Drama - NocoDB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "['Source Video URL']",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        112
+      ],
+      "id": "a35bb968-128a-485c-929d-b837ee02027c",
+      "name": "Only Output YT Links"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3b49d242-91ea-4b66-8830-2094894f96bd",
+              "leftValue": "={{ $json['[\\'Source Video URL\\']'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        112
+      ],
+      "id": "4ad4ed43-ede9-4f6d-b659-69391a4fea8b",
+      "name": "Remove Empty Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        192,
+        272
+      ],
+      "id": "76f912e3-2789-44fa-b852-47bd35cf4dd3",
+      "name": "Merge Viral & Existing YT Links"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the input data from the first item\nconst inputData = items[0].json.data;\n\n// Collect existing YT links into a Set for quick lookup and uniqueness\nconst existingLinks = new Set();\nconst newUrls = [];\n\n// Iterate through the data array to separate existing and new URLs\nfor (const obj of inputData) {\n  if (obj[\"['Source Video URL']\"]) {\n    existingLinks.add(obj[\"['Source Video URL']\"]);\n  } else if (obj.url) {\n    newUrls.push(obj.url);\n  }\n}\n\n// Filter new URLs to remove those that exist in the database links,\n// then use a Set to deduplicate any remaining doubles among new URLs\nconst filteredUniqueNew = new Set(newUrls.filter(url => !existingLinks.has(url)));\n\n// Return the filtered unique new URLs as an array of items\nreturn [...filteredUniqueNew].map(url => ({ json: { url } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        272
+      ],
+      "id": "980e36be-a060-4ba8-a80f-b9361653b0b8",
+      "name": "Only Output Viral, Unique Videos"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab8f5bc3-9cf0-403e-9bdb-15bc81b168a7",
+              "name": "@GraphikDesign",
+              "value": "UCtTk5b2ELWkDFyUPyKrDGgA",
+              "type": "string"
+            },
+            {
+              "id": "5daed8dc-1ac0-400a-b838-1e6f40963443",
+              "name": "@RevengeAlley",
+              "value": "UCI7oIyyURJtBIIgI-GwZ7mw",
+              "type": "string"
+            },
+            {
+              "id": "f49c7792-d11f-4440-950b-efac47a6d4b8",
+              "name": "@FamilialStoriesExposed",
+              "value": "UC60xvMREnA987PsDybyIZoQ",
+              "type": "string"
+            },
+            {
+              "id": "4302ee31-3b7c-465a-92bd-dffdce37fe6e",
+              "name": "TheFinalRevenge",
+              "value": "UCvsCt-xWLqJmoMu15dM119g",
+              "type": "string"
+            },
+            {
+              "id": "ba9e1aa5-e798-4e10-977f-b215effcc170",
+              "name": "@RedditDramaTales",
+              "value": "UCgXdUudweJwnLvFositr_3g",
+              "type": "string"
+            },
+            {
+              "id": "119e4aad-38df-4d1d-a71d-aeb2d1c238a6",
+              "name": "@TeddyRedditStories",
+              "value": "UC_jjQIb6uPeDaI2nIXl0rIg",
+              "type": "string"
+            },
+            {
+              "id": "4aa9e5cd-74e0-461e-8c17-5f9e0b13440c",
+              "name": "@LimerenceReddit",
+              "value": "UCahTcbP_D1wTfx7LUVYsQtA",
+              "type": "string"
+            },
+            {
+              "id": "412f1798-a04a-4d55-b57c-df0a9cf64b0b",
+              "name": "@TwistedFamilyStories",
+              "value": "UCvhmlkvdg7DdlIHJ9l276Eg",
+              "type": "string"
+            },
+            {
+              "id": "64234349-2795-4682-88b2-1a217acbd6f5",
+              "name": "@FamilyRedditTales",
+              "value": "UC_nKsgHFlHsneWDKED0nAFw",
+              "type": "string"
+            },
+            {
+              "id": "344b1c92-651f-464b-bb8b-1f96a0725ff8",
+              "name": "@paybackties-h6f",
+              "value": "UC2FSYExfUywE3Ks7lbBq2Qg",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1168,
+        512
+      ],
+      "id": "781febfd-2e7a-4764-a0f0-beede7efafc5",
+      "name": "Viral Revenge Channels"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the input object (first item)\nconst inputObj = items[0].json;\n\n// Extract all channel IDs (values) and create separate items\nconst channelIds = Object.values(inputObj);\n\nreturn channelIds.map(channelId => {\n  return {\n    json: {\n      \"channel-id\": channelId\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        512
+      ],
+      "id": "371c1f36-2b88-40f7-8394-687fed081164",
+      "name": "Fix Format"
+    },
+    {
+      "parameters": {
+        "url": "=https://cors.uiisp.top?https://www.youtube.com/feeds/videos.xml?channel_id={{ $json['channel-id'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -656,
+        528
+      ],
+      "id": "2c231931-bdd0-4aa3-a86f-e46203a58662",
+      "name": "Get Latest Upload Data",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        528
+      ],
+      "id": "dfcb21fc-f5ba-4b8b-8ced-87e960923abe",
+      "name": "Format XML -> JSON"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        528
+      ],
+      "id": "93298024-28b2-4c43-8ab0-185ec9351819",
+      "name": "Wait 5s",
+      "webhookId": "53a9a794-a37a-44ed-b301-87014d867adf"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "392830aa-ab4c-48bd-bcdb-a5368244317f",
+              "leftValue": "={{ $json['Source Video URL'] }}",
+              "rightValue": "Queued",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        -32
+      ],
+      "id": "433c858c-4199-400f-826c-736e1efe32b9",
+      "name": "Get Empty Fields",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "content": "## Scrape Channel Uploads",
+        "height": 272,
+        "width": 1360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        464
+      ],
+      "id": "b714f625-73fa-4cbc-87e8-70310846baec",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Filter for Viral & Unique YT-Urls",
+        "height": 384,
+        "width": 1216,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        64
+      ],
+      "id": "e26d527d-ffee-449f-85f3-a09d95458b5a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Add Viral Videos to Sheet",
+        "height": 304,
+        "width": 720,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        144
+      ],
+      "id": "ae160053-7f69-438c-8ee8-83dc36f1712a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "def98027-dc23-480c-ab81-b6735e8ba579",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -448,
+        528
+      ],
+      "id": "e024a324-b5f3-4ab0-ae3d-2cf71704e64c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "path": "ba87a905-4c1c-4741-8e28-92b325ff88a0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1344,
+        688
+      ],
+      "id": "cb071c87-c595-413b-b42f-b095713d9069",
+      "name": "Webhook",
+      "webhookId": "ba87a905-4c1c-4741-8e28-92b325ff88a0"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Run Once for All Items - filters videos and outputs only URLs\nconst NOW = new Date(); // current execution time\n\nfunction hoursSince(dateIso) {\n  const d = new Date(dateIso);\n  if (isNaN(d.getTime())) return Infinity; // invalid date won't pass time-based rule\n  return (NOW - d) / 36e5; // ms to hours\n}\n\nfunction passes(video) {\n  const views = Number(video?.views ?? 0);\n  const ageH = hoursSince(video?.published);\n  // New filter: exclude videos older than 48 hours (2 days)\n  if (ageH > 48) return false;\n  // Rule A: any age (within 48h), strictly more than 9,000 total views\n  if (views > 7000) return true;\n  // Rule B: otherwise, at least 4,000 views within first 8 hours\n  if (views >= 4000 && ageH <= 12) return true;\n  return false;\n}\n\n// Get the data array from the first item\nconst input = items[0].json ?? items[0];\nconst data = Array.isArray(input.data) ? input.data : [];\n\n// Filter and map to URLs in one step\nconst filtered = data.filter(passes);\n\nreturn filtered.map(video => {\n  return {\n    json: {\n      url: video.url\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -144
+      ],
+      "id": "06710533-b506-4483-b056-fddda320e16b",
+      "name": "Filter for Viral Videos OLD"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "x-forwarded-for": "197.204.117.107, 54.86.50.139",
+            "x-forwarded-proto": "https",
+            "x-forwarded-port": "443",
+            "host": "tahabou2002-myauntsgts.hf.space",
+            "x-amzn-trace-id": "Root=1-694a3025-78b0f6196e23b7e47ce0ca8f",
+            "user-agent": "PostmanRuntime/7.51.0",
+            "accept": "*/*",
+            "cache-control": "no-cache",
+            "postman-token": "c8931d99-57ce-4940-8965-f0cc43b180f9",
+            "accept-encoding": "gzip, deflate, br",
+            "x-request-id": "gapBQw, gapBQw",
+            "x-ip-token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpcCI6IjU0Ljg2LjUwLjEzOSIsInVzZXIiOm51bGwsInV1aWQiOm51bGwsImVycm9yIjpudWxsLCJleHAiOjE3NjY0Njk3Mjl9.YpbRv_RCSLzMzK_EGPwh-Ff4tB-LD9m1QqooTDObZZA",
+            "x-direct-url": "https://tahabou2002-myauntsgts.hf.space/--replicas/4ddwh/webhook/ba87a905-4c1c-4741-8e28-92b325ff88a0"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://tahabou2002-myauntsgts.hf.space/webhook/ba87a905-4c1c-4741-8e28-92b325ff88a0",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-21T11:09:17.383Z",
+      "createdAt": "2025-12-21T11:09:17.383Z",
+      "role": "workflow:owner",
+      "workflowId": "ripjeA9XmT5mU8KH",
+      "projectId": "Sz2vPJqZDAwEzZJp"
+    }
+  ],
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": [
+        6
+      ]
+    }
+  },
+  "tags": [],
+  "triggerCount": 2,
+  "updatedAt": "2025-12-23T08:20:55.069Z",
+  "versionId": "522fcc31-3833-4593-8d2b-5719abcd9fd9"
+}
