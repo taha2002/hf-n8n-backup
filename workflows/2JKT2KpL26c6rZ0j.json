@@ -1,0 +1,1994 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-23T12:49:59.303Z",
+    "createdAt": "2025-12-23T12:49:50.144Z",
+    "versionId": "732446dd-3b18-4fea-bc13-7c6251c473bd",
+    "workflowId": "2JKT2KpL26c6rZ0j",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "bde9cf17-a83b-4eed-86f5-3177313910e2111454754",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -2336,
+          48
+        ],
+        "id": "b28d1fe3-451d-405b-94f5-28942db42967",
+        "name": "Webhook",
+        "webhookId": "bde9cf17-a83b-4eed-86f5-3177313910e2"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -2336,
+          208
+        ],
+        "id": "0fc3dd02-e407-4493-ae27-25f521726e22",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "b60447b2-60cd-4196-96df-3250e786e8a6",
+                "name": "Video Render API",
+                "value": "https://tasil66-myspace.hf.space",
+                "type": "string"
+              },
+              {
+                "id": "5b5ca53f-0162-448a-a4be-c27685fcd6ed",
+                "name": "Video Render API key",
+                "value": "Tahabou",
+                "type": "string"
+              },
+              {
+                "id": "e7dadf5b-88f3-4240-ae45-6dac9fee08bb",
+                "name": "Storage Bucket PUBLIC URL",
+                "value": "https://n8nt.mos.us-south-1.sufybkt.com/",
+                "type": "string"
+              },
+              {
+                "id": "b7dd83f2-2a81-4831-8e9c-a369d62e7302",
+                "name": "Videos Folder Path",
+                "value": "german/family-drama/videos",
+                "type": "string"
+              },
+              {
+                "id": "7ef6b116-502d-495e-8faa-0861eec70ee4",
+                "name": "Storage Bucket",
+                "value": "n8nt",
+                "type": "string"
+              },
+              {
+                "id": "2f0bcc38-a638-4ca1-91c7-c4bbd6b878c5",
+                "name": "Overlay Path",
+                "value": "german/family-drama",
+                "type": "string"
+              },
+              {
+                "id": "25a3e389-ce67-4c8b-84c4-4ff804562bd8",
+                "name": "Channel Table Name",
+                "value": "mgz8wkrrkbktpef",
+                "type": "string"
+              },
+              {
+                "id": "7bd7c545-19b3-4639-ac86-7fd268fc5208",
+                "name": "Worker Table Name",
+                "value": "m0jfpnipilf8qr7",
+                "type": "string"
+              },
+              {
+                "id": "9e6cc902-8da2-4464-88b8-752b15a4f1e2",
+                "name": "Channel Base Name",
+                "value": "p7903f0ck8ocsqt",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -2208,
+          128
+        ],
+        "id": "6a9d84ca-38e7-40fc-b69c-eb167d554d4f",
+        "name": "Settings"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "getAll",
+          "workspaceId": "wtu1usuc",
+          "projectId": "={{ $json['Channel Base Name'] }}",
+          "table": "={{ $json['Channel Table Name'] }}",
+          "returnAll": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          -2048,
+          128
+        ],
+        "id": "32e96136-6460-402b-8692-6dac683f56c8",
+        "name": "Grab all Rows from Channel Sheet",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "JoY3JTA7ut2SRv1l",
+            "name": "German Family Drama - NocoDB"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "ae8801fd-f0b7-4ddb-af67-278a744c3f79",
+                      "leftValue": "={{ $items().some(item => item.json.Status === 'Processing') }}",
+                      "rightValue": "Processing",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "false",
+                        "singleValue": true
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Clear"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $items().some(item => item.json.Status === 'Processing') }}",
+                      "rightValue": "Processing",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "true",
+                        "singleValue": true
+                      },
+                      "id": "33b7a262-7e93-4362-8c0b-475e2c9cffab"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Stop"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          -1856,
+          128
+        ],
+        "id": "fb04e7ac-9ed6-4791-b5f2-e3f81ef18cad",
+        "name": "Check for \"Processing\""
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "392830aa-ab4c-48bd-bcdb-a5368244317f",
+                "leftValue": "={{ $json.Status }}",
+                "rightValue": "Queued",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [
+          -1632,
+          128
+        ],
+        "id": "c7d807e1-095f-4c2f-b23a-e4b3b40cc331",
+        "name": "Grab all \"Queued\" Ideas",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          -1456,
+          128
+        ],
+        "id": "f48992ef-50fb-49db-b22a-c89f44bcfabe",
+        "name": "Grab First Item"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "06QwoKYzlg09V9vG",
+            "mode": "id",
+            "cachedResultUrl": "/workflow/06QwoKYzlg09V9vG"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          -928,
+          128
+        ],
+        "id": "e054a3e3-2aea-417f-a2e3-f26302eea57d",
+        "name": "Get YT Transcript"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "update",
+          "projectId": "={{ $('Settings').first().json['Channel Base Name'] }}",
+          "table": "={{ $('Settings').first().json['Channel Table Name'] }}",
+          "id": "={{ $('Grab First Item').first().json.Id }}",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "Status",
+                "fieldValue": "=Processing"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 2,
+        "position": [
+          -1280,
+          128
+        ],
+        "id": "3c813f42-21a5-4f7b-bb62-18c42e6cef43",
+        "name": "Set Status to \"Processing\"",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "JoY3JTA7ut2SRv1l",
+            "name": "German Family Drama - NocoDB"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Based on the following video description, generate a short and descriptive title that is 5 to 8 words long.\n\n\nVideo description: “{{ $json.Summary }}”",
+          "options": {
+            "systemMessage": "You are an expert at creating short, memorable video titles. You are creative and concise. Your answer may ONLY be the title itself, without any additional text or quotation marks."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          -752,
+          128
+        ],
+        "id": "45457607-0aa8-4261-a9ec-dae0d9bb967a",
+        "name": "Generate Project Name"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get all input items\nconst inputItems = $input.all();\n\n// Function to sluggify a string\nfunction sluggify(str) {\n  if (!str) return '';\n  \n  // Lowercase\n  str = str.toLowerCase();\n  \n  // Trim leading/trailing spaces\n  str = str.trim();\n  \n  // Remove all non-word, non-space, non-hyphen characters\n  str = str.replace(/[^\\w\\s-]/g, '');\n  \n  // Replace one or more spaces or underscores with a single hyphen\n  str = str.replace(/[\\s_]+/g, '-');\n  \n  // Remove leading or trailing hyphens\n  str = str.replace(/^-+|-+$/g, '');\n  \n  return str;\n}\n\n// Process each item\nconst outputItems = inputItems.map(item => {\n  const data = item.json;\n  \n  // Assume the field to sluggify is 'output'\n  const projectName = data.output;\n  \n  // Add the cleaned version as 'clean_project_name'\n  data.sluggified = sluggify(projectName);\n  \n  return { json: data };\n});\n\n// Return the modified items\nreturn outputItems;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -432,
+          32
+        ],
+        "id": "ec9777b7-08c9-4ef3-9c0a-394cc4cb9521",
+        "name": "Sluggify Name (URL-friendly)"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "08e8340a-742a-49c8-942b-afe77861e002",
+                "name": "Channel Table Name",
+                "value": "={{ $('Settings').first().json['Channel Table Name'] }}",
+                "type": "string"
+              },
+              {
+                "id": "299a40a5-4c3f-4ce6-961c-bcdd39deafe8",
+                "name": "Channel Base Name",
+                "value": "={{ $('Settings').first().json['Channel Base Name'] }}",
+                "type": "string"
+              },
+              {
+                "id": "a84e52fc-06a0-47df-9240-816f206989c0",
+                "name": "Worker Table Name",
+                "value": "={{ $('Settings').first().json['Worker Table Name'] }}",
+                "type": "string"
+              },
+              {
+                "id": "b9fe7cfe-59ab-425d-b76c-35619bf7cb38",
+                "name": "Script",
+                "value": "={{ $('Script Workflow').item.json.Script }}",
+                "type": "string"
+              },
+              {
+                "id": "c1bd76c8-0ab0-4370-b80e-2e27e6ac8e1a",
+                "name": "Storage Bucket",
+                "value": "={{ $('Settings').first().json['Storage Bucket'] }}",
+                "type": "string"
+              },
+              {
+                "id": "bb41f120-2e09-4ec9-a2f3-6336f113a49f",
+                "name": "Videos Folder Path",
+                "value": "={{ $('Settings').first().json['Videos Folder Path'] }}",
+                "type": "string"
+              },
+              {
+                "id": "8fe5ff44-e88d-46bd-aa67-9e8132d8f69b",
+                "name": "Project Name",
+                "value": "={{ $('Sluggify Name (URL-friendly)').first().json.sluggified }}",
+                "type": "string"
+              },
+              {
+                "id": "74791663-9b92-4178-84f2-640038bc7f6b",
+                "name": "Overlay Video",
+                "value": "={{ $('Settings').first().json['Overlay Path'] }}",
+                "type": "string"
+              },
+              {
+                "id": "5a219280-696a-4010-9b36-796c5232b2f1",
+                "name": "Video Render API",
+                "value": "={{ $('Settings').first().json['Video Render API'] }}",
+                "type": "string"
+              },
+              {
+                "id": "93bed62e-7fca-4888-9626-ab34b3d1241b",
+                "name": "Video Render API key",
+                "value": "={{ $('Settings').item.json['Video Render API key'] }}",
+                "type": "string"
+              },
+              {
+                "id": "5046a7c5-236d-4595-9ce3-7e3f5b43e9fa",
+                "name": "Id",
+                "value": "={{ $('Grab First Item').first().json.Id }}",
+                "type": "string"
+              },
+              {
+                "id": "4e723694-d7b2-403c-a171-ec2b00d2fd4d",
+                "name": "Storage Bucket PUBLIC URL",
+                "value": "={{ $('Settings').item.json['Storage Bucket PUBLIC URL'] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -192,
+          368
+        ],
+        "id": "df0e57f5-7588-45ca-bebc-b67efb25bc36",
+        "name": "Input for Video Generation"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "6d64dbe8-fece-49ba-a70c-ed41ad567cbf",
+                "name": "Script",
+                "value": "={{ $json.Script }}",
+                "type": "string"
+              },
+              {
+                "id": "a59352bb-0216-4110-aff4-75737bf69ba0",
+                "name": "Id",
+                "value": "={{ $('Grab First Item').first().json.Id }}",
+                "type": "string"
+              },
+              {
+                "id": "ac2384b9-5195-4188-b64b-776a93a60119",
+                "name": "Source Video URL",
+                "value": "={{ $('Grab First Item').first().json['Source Video URL'] }}",
+                "type": "string"
+              },
+              {
+                "id": "8b70c8f5-3b90-412c-8d74-852ea2198f6d",
+                "name": "Channel Table Name",
+                "value": "={{ $('Settings').first().json['Channel Table Name'] }}",
+                "type": "string"
+              },
+              {
+                "id": "fa17b125-0ff4-4736-8026-4feca63f01dd",
+                "name": "Channel Base Name",
+                "value": "={{ $('Settings').first().json['Channel Base Name'] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -192,
+          112
+        ],
+        "id": "5c937dee-19d4-4fd7-a21c-451ad7ef1202",
+        "name": "Input for Packaging Workflow"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "hyE2T0ylO68igbcA",
+            "mode": "id",
+            "cachedResultUrl": "/workflow/hyE2T0ylO68igbcA"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          -16,
+          112
+        ],
+        "id": "424f6fa9-e008-4cdf-92af-0f66acc7ca47",
+        "name": "Packaging Workflow"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "mKyncW0fgoASQT11",
+            "mode": "id",
+            "cachedResultUrl": "/workflow/mKyncW0fgoASQT11"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          -16,
+          368
+        ],
+        "id": "ef4953e1-bb70-42bd-9e59-5b7a073d0048",
+        "name": "Video Generation Workflow"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3b7dfb10-df66-44e4-a9c9-175c06691514",
+                "name": "Transcript",
+                "value": "={{ $('Get YT Transcript').first().json.Transcript }}",
+                "type": "string"
+              },
+              {
+                "id": "bfb384bb-59be-425f-beff-3099d50235c0",
+                "name": "Project Name",
+                "value": "={{ $('Sluggify Name (URL-friendly)').first().json.sluggified }}",
+                "type": "string"
+              },
+              {
+                "id": "8fec0065-9918-4027-893d-abf7957be4fa",
+                "name": "Channel Base Name",
+                "value": "={{ $('Settings').first().json['Channel Base Name'] }}",
+                "type": "string"
+              },
+              {
+                "id": "06a64ff1-1f6d-40c4-a671-ce66833d50ce",
+                "name": "Channel Table Name",
+                "value": "={{ $('Settings').first().json['Channel Table Name'] }}",
+                "type": "string"
+              },
+              {
+                "id": "f5a8977f-2142-4684-bea2-f9252fef3348",
+                "name": "Id",
+                "value": "={{ $('Grab First Item').first().json.Id }}",
+                "type": "string"
+              },
+              {
+                "id": "99550838-f55b-4b93-a51c-c4da384e0e1e",
+                "name": "Bucket Name",
+                "value": "={{ $('Settings').item.json[\"Storage Bucket\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "e809f2bf-c37a-49b8-a1f2-deda03f7a836",
+                "name": "Overlay Path",
+                "value": "={{ $('Settings').item.json[\"Videos Folder Path\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "66b258b9-8f92-4fcc-a585-26afed9b3659",
+                "name": "Storage Bucket PUBLIC URL",
+                "value": "={{ $('Settings').item.json[\"Storage Bucket PUBLIC URL\"] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -192,
+          -144
+        ],
+        "id": "e0adeafb-1e65-416c-b522-274ade97a606",
+        "name": "Input for Script Workflow"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "ohiEdp8uyihJp8lg",
+            "mode": "id",
+            "cachedResultUrl": "/workflow/ohiEdp8uyihJp8lg"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          -16,
+          -144
+        ],
+        "id": "bdbb7ddd-430a-485c-ae25-e09e2bdb3515",
+        "name": "Script Workflow"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3b7dfb10-df66-44e4-a9c9-175c06691514",
+                "name": "Source Video URL",
+                "value": "={{ $('Grab First Item').item.json['Source Video URL'] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1104,
+          128
+        ],
+        "id": "d411a8d2-5f10-43e9-bac3-017734315b5f",
+        "name": "Input for Transcript Workflow"
+      },
+      {
+        "parameters": {
+          "content": "## Script Workflow",
+          "height": 208,
+          "width": 384,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -240,
+          -192
+        ],
+        "id": "a944d010-f8b8-416b-b1c8-07f3947f7f80",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Packaging Workflow",
+          "height": 208,
+          "width": 384,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -240,
+          64
+        ],
+        "id": "8a966a9e-ffaf-4e1b-be40-8858c241de42",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Video Workflow",
+          "height": 208,
+          "width": 384,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -240,
+          320
+        ],
+        "id": "5a492f14-95e9-46e7-a765-820396ec8211",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Start Worfklow & Grab Idea",
+          "height": 368,
+          "width": 1216,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -2384,
+          0
+        ],
+        "id": "86eabd61-f183-4fa2-aecf-fb0dd1966a69",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## Get Viral Videos Transcript & Generate Project Name",
+          "height": 432,
+          "width": 864,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1152,
+          0
+        ],
+        "id": "89b4a464-8e45-44c5-9982-d5ef58679b2a",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "update",
+          "projectId": "={{ $('Settings').first().json['Channel Base Name'] }}",
+          "table": "={{ $('Settings').first().json['Channel Table Name'] }}",
+          "id": "={{ $('Grab First Item').first().json.Id }}",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "Project Storage Folder",
+                "fieldValue": "=https://your-minio-ip.com/browser/{{ $('Settings').first().json['Storage Bucket'] }}/{{ $('Settings').first().json['Videos Folder Path'].replaceAll(\"/\", \"%2F\") }}%2F{{ $json.sluggified.replaceAll(\"/\", \"%2F\") }}%2F"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 2,
+        "position": [
+          -432,
+          224
+        ],
+        "id": "0e60d4ac-8ffa-40b4-85d9-521c5d1b25ed",
+        "name": "Add Project URL To Row",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "JoY3JTA7ut2SRv1l",
+            "name": "German Family Drama - NocoDB"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "modelName": "models/gemini-2.5-flash-lite",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -752,
+          304
+        ],
+        "id": "c7a1826d-eaaf-4b8a-b29a-2ce788e43370",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "jyPiseA5iZX10nrt",
+            "name": "German Family Drama - Google Gemini"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Settings",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Settings",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Settings": {
+        "main": [
+          [
+            {
+              "node": "Grab all Rows from Channel Sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Grab all Rows from Channel Sheet": {
+        "main": [
+          [
+            {
+              "node": "Check for \"Processing\"",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check for \"Processing\"": {
+        "main": [
+          [
+            {
+              "node": "Grab all \"Queued\" Ideas",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Grab all \"Queued\" Ideas": {
+        "main": [
+          [
+            {
+              "node": "Grab First Item",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Grab First Item": {
+        "main": [
+          [
+            {
+              "node": "Set Status to \"Processing\"",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get YT Transcript": {
+        "main": [
+          [
+            {
+              "node": "Generate Project Name",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Status to \"Processing\"": {
+        "main": [
+          [
+            {
+              "node": "Input for Transcript Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Project Name": {
+        "main": [
+          [
+            {
+              "node": "Sluggify Name (URL-friendly)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sluggify Name (URL-friendly)": {
+        "main": [
+          [
+            {
+              "node": "Add Project URL To Row",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Input for Video Generation": {
+        "main": [
+          [
+            {
+              "node": "Video Generation Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Input for Packaging Workflow": {
+        "main": [
+          [
+            {
+              "node": "Packaging Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Packaging Workflow": {
+        "main": [
+          [
+            {
+              "node": "Input for Video Generation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Input for Script Workflow": {
+        "main": [
+          [
+            {
+              "node": "Script Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Script Workflow": {
+        "main": [
+          [
+            {
+              "node": "Input for Packaging Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Input for Transcript Workflow": {
+        "main": [
+          [
+            {
+              "node": "Get YT Transcript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Project URL To Row": {
+        "main": [
+          [
+            {
+              "node": "Input for Script Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Generate Project Name",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "taha bouras",
+    "name": "Version 732446dd",
+    "description": ""
+  },
+  "activeVersionId": "732446dd-3b18-4fea-bc13-7c6251c473bd",
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Grab all Rows from Channel Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grab all Rows from Channel Sheet": {
+      "main": [
+        [
+          {
+            "node": "Check for \"Processing\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for \"Processing\"": {
+      "main": [
+        [
+          {
+            "node": "Grab all \"Queued\" Ideas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grab all \"Queued\" Ideas": {
+      "main": [
+        [
+          {
+            "node": "Grab First Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grab First Item": {
+      "main": [
+        [
+          {
+            "node": "Set Status to \"Processing\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get YT Transcript": {
+      "main": [
+        [
+          {
+            "node": "Generate Project Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Status to \"Processing\"": {
+      "main": [
+        [
+          {
+            "node": "Input for Transcript Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Project Name": {
+      "main": [
+        [
+          {
+            "node": "Sluggify Name (URL-friendly)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sluggify Name (URL-friendly)": {
+      "main": [
+        [
+          {
+            "node": "Add Project URL To Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input for Video Generation": {
+      "main": [
+        [
+          {
+            "node": "Video Generation Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input for Packaging Workflow": {
+      "main": [
+        [
+          {
+            "node": "Packaging Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Packaging Workflow": {
+      "main": [
+        [
+          {
+            "node": "Input for Video Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input for Script Workflow": {
+      "main": [
+        [
+          {
+            "node": "Script Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Script Workflow": {
+      "main": [
+        [
+          {
+            "node": "Input for Packaging Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input for Transcript Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get YT Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Project URL To Row": {
+      "main": [
+        [
+          {
+            "node": "Input for Script Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Project Name",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-21T11:09:58.418Z",
+  "id": "2JKT2KpL26c6rZ0j",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "1. Organizer Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "bde9cf17-a83b-4eed-86f5-3177313910e2111454754",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2336,
+        48
+      ],
+      "id": "b28d1fe3-451d-405b-94f5-28942db42967",
+      "name": "Webhook",
+      "webhookId": "bde9cf17-a83b-4eed-86f5-3177313910e2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2336,
+        208
+      ],
+      "id": "0fc3dd02-e407-4493-ae27-25f521726e22",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b60447b2-60cd-4196-96df-3250e786e8a6",
+              "name": "Video Render API",
+              "value": "https://tasil66-myspace.hf.space",
+              "type": "string"
+            },
+            {
+              "id": "5b5ca53f-0162-448a-a4be-c27685fcd6ed",
+              "name": "Video Render API key",
+              "value": "Tahabou",
+              "type": "string"
+            },
+            {
+              "id": "e7dadf5b-88f3-4240-ae45-6dac9fee08bb",
+              "name": "Storage Bucket PUBLIC URL",
+              "value": "https://n8nt.mos.us-south-1.sufybkt.com/",
+              "type": "string"
+            },
+            {
+              "id": "b7dd83f2-2a81-4831-8e9c-a369d62e7302",
+              "name": "Videos Folder Path",
+              "value": "german/family-drama/videos",
+              "type": "string"
+            },
+            {
+              "id": "7ef6b116-502d-495e-8faa-0861eec70ee4",
+              "name": "Storage Bucket",
+              "value": "n8nt",
+              "type": "string"
+            },
+            {
+              "id": "2f0bcc38-a638-4ca1-91c7-c4bbd6b878c5",
+              "name": "Overlay Path",
+              "value": "german/family-drama",
+              "type": "string"
+            },
+            {
+              "id": "25a3e389-ce67-4c8b-84c4-4ff804562bd8",
+              "name": "Channel Table Name",
+              "value": "mgz8wkrrkbktpef",
+              "type": "string"
+            },
+            {
+              "id": "7bd7c545-19b3-4639-ac86-7fd268fc5208",
+              "name": "Worker Table Name",
+              "value": "m0jfpnipilf8qr7",
+              "type": "string"
+            },
+            {
+              "id": "9e6cc902-8da2-4464-88b8-752b15a4f1e2",
+              "name": "Channel Base Name",
+              "value": "p7903f0ck8ocsqt",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2208,
+        128
+      ],
+      "id": "6a9d84ca-38e7-40fc-b69c-eb167d554d4f",
+      "name": "Settings"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "workspaceId": "wtu1usuc",
+        "projectId": "={{ $json['Channel Base Name'] }}",
+        "table": "={{ $json['Channel Table Name'] }}",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -2048,
+        128
+      ],
+      "id": "32e96136-6460-402b-8692-6dac683f56c8",
+      "name": "Grab all Rows from Channel Sheet",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "JoY3JTA7ut2SRv1l",
+          "name": "German Family Drama - NocoDB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ae8801fd-f0b7-4ddb-af67-278a744c3f79",
+                    "leftValue": "={{ $items().some(item => item.json.Status === 'Processing') }}",
+                    "rightValue": "Processing",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Clear"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $items().some(item => item.json.Status === 'Processing') }}",
+                    "rightValue": "Processing",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "33b7a262-7e93-4362-8c0b-475e2c9cffab"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Stop"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1856,
+        128
+      ],
+      "id": "fb04e7ac-9ed6-4791-b5f2-e3f81ef18cad",
+      "name": "Check for \"Processing\""
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "392830aa-ab4c-48bd-bcdb-a5368244317f",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Queued",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1632,
+        128
+      ],
+      "id": "c7d807e1-095f-4c2f-b23a-e4b3b40cc331",
+      "name": "Grab all \"Queued\" Ideas",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -1456,
+        128
+      ],
+      "id": "f48992ef-50fb-49db-b22a-c89f44bcfabe",
+      "name": "Grab First Item"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "06QwoKYzlg09V9vG",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/06QwoKYzlg09V9vG"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -928,
+        128
+      ],
+      "id": "e054a3e3-2aea-417f-a2e3-f26302eea57d",
+      "name": "Get YT Transcript"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "projectId": "={{ $('Settings').first().json['Channel Base Name'] }}",
+        "table": "={{ $('Settings').first().json['Channel Table Name'] }}",
+        "id": "={{ $('Grab First Item').first().json.Id }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "Status",
+              "fieldValue": "=Processing"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        128
+      ],
+      "id": "3c813f42-21a5-4f7b-bb62-18c42e6cef43",
+      "name": "Set Status to \"Processing\"",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "JoY3JTA7ut2SRv1l",
+          "name": "German Family Drama - NocoDB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Based on the following video description, generate a short and descriptive title that is 5 to 8 words long.\n\n\nVideo description: “{{ $json.Summary }}”",
+        "options": {
+          "systemMessage": "You are an expert at creating short, memorable video titles. You are creative and concise. Your answer may ONLY be the title itself, without any additional text or quotation marks."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -752,
+        128
+      ],
+      "id": "45457607-0aa8-4261-a9ec-dae0d9bb967a",
+      "name": "Generate Project Name"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input items\nconst inputItems = $input.all();\n\n// Function to sluggify a string\nfunction sluggify(str) {\n  if (!str) return '';\n  \n  // Lowercase\n  str = str.toLowerCase();\n  \n  // Trim leading/trailing spaces\n  str = str.trim();\n  \n  // Remove all non-word, non-space, non-hyphen characters\n  str = str.replace(/[^\\w\\s-]/g, '');\n  \n  // Replace one or more spaces or underscores with a single hyphen\n  str = str.replace(/[\\s_]+/g, '-');\n  \n  // Remove leading or trailing hyphens\n  str = str.replace(/^-+|-+$/g, '');\n  \n  return str;\n}\n\n// Process each item\nconst outputItems = inputItems.map(item => {\n  const data = item.json;\n  \n  // Assume the field to sluggify is 'output'\n  const projectName = data.output;\n  \n  // Add the cleaned version as 'clean_project_name'\n  data.sluggified = sluggify(projectName);\n  \n  return { json: data };\n});\n\n// Return the modified items\nreturn outputItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        32
+      ],
+      "id": "ec9777b7-08c9-4ef3-9c0a-394cc4cb9521",
+      "name": "Sluggify Name (URL-friendly)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "08e8340a-742a-49c8-942b-afe77861e002",
+              "name": "Channel Table Name",
+              "value": "={{ $('Settings').first().json['Channel Table Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "299a40a5-4c3f-4ce6-961c-bcdd39deafe8",
+              "name": "Channel Base Name",
+              "value": "={{ $('Settings').first().json['Channel Base Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a84e52fc-06a0-47df-9240-816f206989c0",
+              "name": "Worker Table Name",
+              "value": "={{ $('Settings').first().json['Worker Table Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b9fe7cfe-59ab-425d-b76c-35619bf7cb38",
+              "name": "Script",
+              "value": "={{ $('Script Workflow').item.json.Script }}",
+              "type": "string"
+            },
+            {
+              "id": "c1bd76c8-0ab0-4370-b80e-2e27e6ac8e1a",
+              "name": "Storage Bucket",
+              "value": "={{ $('Settings').first().json['Storage Bucket'] }}",
+              "type": "string"
+            },
+            {
+              "id": "bb41f120-2e09-4ec9-a2f3-6336f113a49f",
+              "name": "Videos Folder Path",
+              "value": "={{ $('Settings').first().json['Videos Folder Path'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8fe5ff44-e88d-46bd-aa67-9e8132d8f69b",
+              "name": "Project Name",
+              "value": "={{ $('Sluggify Name (URL-friendly)').first().json.sluggified }}",
+              "type": "string"
+            },
+            {
+              "id": "74791663-9b92-4178-84f2-640038bc7f6b",
+              "name": "Overlay Video",
+              "value": "={{ $('Settings').first().json['Overlay Path'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5a219280-696a-4010-9b36-796c5232b2f1",
+              "name": "Video Render API",
+              "value": "={{ $('Settings').first().json['Video Render API'] }}",
+              "type": "string"
+            },
+            {
+              "id": "93bed62e-7fca-4888-9626-ab34b3d1241b",
+              "name": "Video Render API key",
+              "value": "={{ $('Settings').item.json['Video Render API key'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5046a7c5-236d-4595-9ce3-7e3f5b43e9fa",
+              "name": "Id",
+              "value": "={{ $('Grab First Item').first().json.Id }}",
+              "type": "string"
+            },
+            {
+              "id": "4e723694-d7b2-403c-a171-ec2b00d2fd4d",
+              "name": "Storage Bucket PUBLIC URL",
+              "value": "={{ $('Settings').item.json['Storage Bucket PUBLIC URL'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        368
+      ],
+      "id": "df0e57f5-7588-45ca-bebc-b67efb25bc36",
+      "name": "Input for Video Generation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d64dbe8-fece-49ba-a70c-ed41ad567cbf",
+              "name": "Script",
+              "value": "={{ $json.Script }}",
+              "type": "string"
+            },
+            {
+              "id": "a59352bb-0216-4110-aff4-75737bf69ba0",
+              "name": "Id",
+              "value": "={{ $('Grab First Item').first().json.Id }}",
+              "type": "string"
+            },
+            {
+              "id": "ac2384b9-5195-4188-b64b-776a93a60119",
+              "name": "Source Video URL",
+              "value": "={{ $('Grab First Item').first().json['Source Video URL'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8b70c8f5-3b90-412c-8d74-852ea2198f6d",
+              "name": "Channel Table Name",
+              "value": "={{ $('Settings').first().json['Channel Table Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "fa17b125-0ff4-4736-8026-4feca63f01dd",
+              "name": "Channel Base Name",
+              "value": "={{ $('Settings').first().json['Channel Base Name'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        112
+      ],
+      "id": "5c937dee-19d4-4fd7-a21c-451ad7ef1202",
+      "name": "Input for Packaging Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "hyE2T0ylO68igbcA",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/hyE2T0ylO68igbcA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        112
+      ],
+      "id": "424f6fa9-e008-4cdf-92af-0f66acc7ca47",
+      "name": "Packaging Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "mKyncW0fgoASQT11",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/mKyncW0fgoASQT11"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        368
+      ],
+      "id": "ef4953e1-bb70-42bd-9e59-5b7a073d0048",
+      "name": "Video Generation Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3b7dfb10-df66-44e4-a9c9-175c06691514",
+              "name": "Transcript",
+              "value": "={{ $('Get YT Transcript').first().json.Transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "bfb384bb-59be-425f-beff-3099d50235c0",
+              "name": "Project Name",
+              "value": "={{ $('Sluggify Name (URL-friendly)').first().json.sluggified }}",
+              "type": "string"
+            },
+            {
+              "id": "8fec0065-9918-4027-893d-abf7957be4fa",
+              "name": "Channel Base Name",
+              "value": "={{ $('Settings').first().json['Channel Base Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "06a64ff1-1f6d-40c4-a671-ce66833d50ce",
+              "name": "Channel Table Name",
+              "value": "={{ $('Settings').first().json['Channel Table Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "f5a8977f-2142-4684-bea2-f9252fef3348",
+              "name": "Id",
+              "value": "={{ $('Grab First Item').first().json.Id }}",
+              "type": "string"
+            },
+            {
+              "id": "99550838-f55b-4b93-a51c-c4da384e0e1e",
+              "name": "Bucket Name",
+              "value": "={{ $('Settings').item.json[\"Storage Bucket\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e809f2bf-c37a-49b8-a1f2-deda03f7a836",
+              "name": "Overlay Path",
+              "value": "={{ $('Settings').item.json[\"Videos Folder Path\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "66b258b9-8f92-4fcc-a585-26afed9b3659",
+              "name": "Storage Bucket PUBLIC URL",
+              "value": "={{ $('Settings').item.json[\"Storage Bucket PUBLIC URL\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        -144
+      ],
+      "id": "e0adeafb-1e65-416c-b522-274ade97a606",
+      "name": "Input for Script Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ohiEdp8uyihJp8lg",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/ohiEdp8uyihJp8lg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        -144
+      ],
+      "id": "bdbb7ddd-430a-485c-ae25-e09e2bdb3515",
+      "name": "Script Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3b7dfb10-df66-44e4-a9c9-175c06691514",
+              "name": "Source Video URL",
+              "value": "={{ $('Grab First Item').item.json['Source Video URL'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1104,
+        128
+      ],
+      "id": "d411a8d2-5f10-43e9-bac3-017734315b5f",
+      "name": "Input for Transcript Workflow"
+    },
+    {
+      "parameters": {
+        "content": "## Script Workflow",
+        "height": 208,
+        "width": 384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -192
+      ],
+      "id": "a944d010-f8b8-416b-b1c8-07f3947f7f80",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Packaging Workflow",
+        "height": 208,
+        "width": 384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        64
+      ],
+      "id": "8a966a9e-ffaf-4e1b-be40-8858c241de42",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Video Workflow",
+        "height": 208,
+        "width": 384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        320
+      ],
+      "id": "5a492f14-95e9-46e7-a765-820396ec8211",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Start Worfklow & Grab Idea",
+        "height": 368,
+        "width": 1216,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2384,
+        0
+      ],
+      "id": "86eabd61-f183-4fa2-aecf-fb0dd1966a69",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Get Viral Videos Transcript & Generate Project Name",
+        "height": 432,
+        "width": 864,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1152,
+        0
+      ],
+      "id": "89b4a464-8e45-44c5-9982-d5ef58679b2a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "projectId": "={{ $('Settings').first().json['Channel Base Name'] }}",
+        "table": "={{ $('Settings').first().json['Channel Table Name'] }}",
+        "id": "={{ $('Grab First Item').first().json.Id }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "Project Storage Folder",
+              "fieldValue": "=https://your-minio-ip.com/browser/{{ $('Settings').first().json['Storage Bucket'] }}/{{ $('Settings').first().json['Videos Folder Path'].replaceAll(\"/\", \"%2F\") }}%2F{{ $json.sluggified.replaceAll(\"/\", \"%2F\") }}%2F"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        224
+      ],
+      "id": "0e60d4ac-8ffa-40b4-85d9-521c5d1b25ed",
+      "name": "Add Project URL To Row",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "JoY3JTA7ut2SRv1l",
+          "name": "German Family Drama - NocoDB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        304
+      ],
+      "id": "c7a1826d-eaaf-4b8a-b29a-2ce788e43370",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "jyPiseA5iZX10nrt",
+          "name": "German Family Drama - Google Gemini"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-21T11:09:58.418Z",
+      "createdAt": "2025-12-21T11:09:58.418Z",
+      "role": "workflow:owner",
+      "workflowId": "2JKT2KpL26c6rZ0j",
+      "projectId": "Sz2vPJqZDAwEzZJp"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-23T12:49:50.038Z",
+  "versionId": "732446dd-3b18-4fea-bc13-7c6251c473bd"
+}
