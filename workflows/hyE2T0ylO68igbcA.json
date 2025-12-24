@@ -1,0 +1,622 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-21T17:48:00.635Z",
+    "createdAt": "2025-12-21T17:47:52.745Z",
+    "versionId": "dac3eaf5-72aa-446f-afd5-5a9f3db6a94a",
+    "workflowId": "hyE2T0ylO68igbcA",
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -208,
+          -96
+        ],
+        "id": "ab7c2cb1-5ac2-4b66-9d8a-be016b8b3d29",
+        "name": "trigger"
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "[\n  {\n    \"thumbnail_text\": \"Sohn meldet sich nach 13 Jahren Funkstille: „Als dein Sohn steht mir ein Teil des Lottogewinns zu!“\",\n    \"title\": \"Sohn fordert Erbe nach 13 Jahren Funkstille – dann zeige ich ihm die Wahrheit!\"\n  }\n]"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          832,
+          80
+        ],
+        "id": "bb4a2127-a519-4da8-99d6-86b78fc99738",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "url": "=https://cors.uiisp.top?https://www.youtube.com/oembed?url={{ $json['Source Video URL'] }}&format=json",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -64,
+          -96
+        ],
+        "id": "e15284b5-2374-41e7-a79a-404a369b0e5a",
+        "name": "Collect Video Information",
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.thumbnail_url }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          112,
+          -96
+        ],
+        "id": "053029d6-0518-4a0c-a7e8-5ab8010c4b25",
+        "name": "Download Original Thumbnail",
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 5000
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Title (for inspiration):\n{{ $('Download Original Thumbnail').first().json.title }}\n\nThumbnail Text (for inspiration):\n{{ $json.output }}\n\nGerman Script:\n{{ $('trigger').first().json.Script }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=You are an AI agent specialized in creating engaging YouTube video metadata in German, based on provided English references and a German script. Your task is to process the input Objects, where each object contains:\n\n\"thumbnail text\": An English thumbnail text (often dramatic and in all caps or mixed case).\n\"title\": An English video title.\n\"script\": The full German script of the story, which is inspired by but not identical to the English references.\n\nFor each object in the array, generate:\n\nA German thumbnail text inspired by the English one, but not a direct translation. Make it dramatic, engaging, and adjusted to fit the German script's details (e.g., change dollars to euros, use German number formatting like 7.000 Euro, adapt cultural or contextual elements). Use normal sentence capitalization (not all caps). Use German quotation marks like „xyz\". Keep it around the same length as the English one.\nA German title inspired by the English one, similar in style and structure to retain viral potential (e.g., provocative, emotional hooks), but adjusted to the script's specifics. Do not copy directly; make it original but evocative. Ensure the title is around 100 characters (including spaces). Use proper German capitalization and punctuation.\n\nABSOLUTE RULE - NO EXCEPTIONS: NEVER USE CHARACTER NAMES IN THE THUMBNAIL TEXT\nViewers have never heard this story before. They don't know who \"Laura\", \"Jonas\", \"Maria\", or any other character is. Using names is meaningless and confusing to them.\nWRONG EXAMPLES (NEVER DO THIS):\n\n❌ \"Laura will dich nicht dabei haben\"\n❌ \"Jonas sagte mir die Wahrheit\"\n❌ \"Maria rief mich an\"\n\nCORRECT EXAMPLES (ALWAYS DO THIS):\n\n✅ \"Meine Schwiegertochter will dich nicht dabei haben\"\n✅ \"Mein Sohn sagte mir die Wahrheit\"\n✅ \"Die Frau meines Sohnes rief mich an\"\n✅ \"Der Nachbar konfrontierte mich\"\n\nBefore you write any thumbnail text, check it: Does it contain ANY personal name? If yes, replace it immediately with a relationship descriptor (Schwiegertochter, mein Sohn, die Frau, der Mann, meine Mutter, etc.).\nBase your generations on the \"script\" for accuracy, ensuring they reflect the story's essence while drawing inspiration from the English thumbnail-text and title for tone and impact.\nOUTPUT FORMAT:\n\nReturn ONLY a raw JSON array\nNO markdown formatting, NO code blocks, NO wrapper objects\nJust the plain JSON array starting with [ and ending with ]\n\nDo not include the original English fields or the script in your output.\n\n\nFINAL OUTPUT FORMAT\n[\n  {\n    \"thumbnail_text\": \"Sohn meldet sich nach 13 Jahren Funkstille: „Als dein Sohn steht mir ein Teil des Lottogewinns zu!“\",\n    \"title\": \"Sohn fordert Erbe nach 13 Jahren Funkstille – dann zeige ich ihm die Wahrheit!\"\n  }\n]"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          640,
+          -96
+        ],
+        "id": "cb34ca2d-6c9a-4860-996a-326f3cd49079",
+        "name": "Generate Packaging"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "update",
+          "workspaceId": "wtu1usuc",
+          "projectId": "={{ $('trigger').first().json['Channel Base Name'] }}",
+          "table": "={{ $('trigger').first().json['Channel Table Name'] }}",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "=Id",
+                "fieldValue": "={{ $('trigger').first().json.Id }}"
+              },
+              {
+                "fieldName": "Video Packaging",
+                "fieldValue": "=Thumbnail Text:\n{{ $json.output[0].thumbnail_text }}\n\nTitle:\n{{ $json.output[0].title }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          1040,
+          -96
+        ],
+        "id": "1a37162b-1f3a-43b1-b271-791e55c812ae",
+        "name": "Add Packaging to Row",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "JoY3JTA7ut2SRv1l",
+            "name": "German Family Drama - NocoDB"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "OCR the text on this image. *Only* Reply with the OCR'd text. Also keep in mind the exact punctuation of the Images text. Do not include the Newlines (\\n) in your response.",
+          "options": {
+            "passthroughBinaryImages": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          272,
+          -96
+        ],
+        "id": "3379cea9-4692-417a-b513-4dcd2b2c110e",
+        "name": "Output Original Thumbnail Text"
+      },
+      {
+        "parameters": {
+          "content": "## Prepare Input Data",
+          "height": 208,
+          "width": 800,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -240,
+          -144
+        ],
+        "id": "4683a5ba-cbd9-4769-b6f2-443a9efe98d4",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Generate Packaging & Add to Project",
+          "height": 208,
+          "width": 592,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          592,
+          -144
+        ],
+        "id": "90e97541-a0c6-4013-a4e6-d53f62086a8b",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          272,
+          80
+        ],
+        "id": "46c2dce9-7901-4043-91c2-5bcf26d806cf",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "jyPiseA5iZX10nrt",
+            "name": "German Family Drama - Google Gemini"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          640,
+          80
+        ],
+        "id": "944e7aa7-6545-4b29-b688-f3e3713469e4",
+        "name": "Google Gemini Chat Model1",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "jyPiseA5iZX10nrt",
+            "name": "German Family Drama - Google Gemini"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "trigger": {
+        "main": [
+          [
+            {
+              "node": "Collect Video Information",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Generate Packaging",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Video Information": {
+        "main": [
+          [
+            {
+              "node": "Download Original Thumbnail",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Original Thumbnail": {
+        "main": [
+          [
+            {
+              "node": "Output Original Thumbnail Text",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Packaging": {
+        "main": [
+          [
+            {
+              "node": "Add Packaging to Row",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Output Original Thumbnail Text": {
+        "main": [
+          [
+            {
+              "node": "Generate Packaging",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Output Original Thumbnail Text",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Generate Packaging",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "taha bouras",
+    "name": "Version dac3eaf5",
+    "description": ""
+  },
+  "activeVersionId": "dac3eaf5-72aa-446f-afd5-5a9f3db6a94a",
+  "connections": {
+    "trigger": {
+      "main": [
+        [
+          {
+            "node": "Collect Video Information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Packaging",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Video Information": {
+      "main": [
+        [
+          {
+            "node": "Download Original Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Original Thumbnail": {
+      "main": [
+        [
+          {
+            "node": "Output Original Thumbnail Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Packaging": {
+      "main": [
+        [
+          {
+            "node": "Add Packaging to Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Original Thumbnail Text": {
+      "main": [
+        [
+          {
+            "node": "Generate Packaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Output Original Thumbnail Text",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Packaging",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-21T11:11:00.741Z",
+  "id": "hyE2T0ylO68igbcA",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "3. Packaging Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -208,
+        -96
+      ],
+      "id": "ab7c2cb1-5ac2-4b66-9d8a-be016b8b3d29",
+      "name": "trigger"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "[\n  {\n    \"thumbnail_text\": \"Sohn meldet sich nach 13 Jahren Funkstille: „Als dein Sohn steht mir ein Teil des Lottogewinns zu!“\",\n    \"title\": \"Sohn fordert Erbe nach 13 Jahren Funkstille – dann zeige ich ihm die Wahrheit!\"\n  }\n]"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        80
+      ],
+      "id": "bb4a2127-a519-4da8-99d6-86b78fc99738",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "url": "=https://cors.uiisp.top?https://www.youtube.com/oembed?url={{ $json['Source Video URL'] }}&format=json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -64,
+        -96
+      ],
+      "id": "e15284b5-2374-41e7-a79a-404a369b0e5a",
+      "name": "Collect Video Information",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.thumbnail_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        -96
+      ],
+      "id": "053029d6-0518-4a0c-a7e8-5ab8010c4b25",
+      "name": "Download Original Thumbnail",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title (for inspiration):\n{{ $('Download Original Thumbnail').first().json.title }}\n\nThumbnail Text (for inspiration):\n{{ $json.output }}\n\nGerman Script:\n{{ $('trigger').first().json.Script }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an AI agent specialized in creating engaging YouTube video metadata in German, based on provided English references and a German script. Your task is to process the input Objects, where each object contains:\n\n\"thumbnail text\": An English thumbnail text (often dramatic and in all caps or mixed case).\n\"title\": An English video title.\n\"script\": The full German script of the story, which is inspired by but not identical to the English references.\n\nFor each object in the array, generate:\n\nA German thumbnail text inspired by the English one, but not a direct translation. Make it dramatic, engaging, and adjusted to fit the German script's details (e.g., change dollars to euros, use German number formatting like 7.000 Euro, adapt cultural or contextual elements). Use normal sentence capitalization (not all caps). Use German quotation marks like „xyz\". Keep it around the same length as the English one.\nA German title inspired by the English one, similar in style and structure to retain viral potential (e.g., provocative, emotional hooks), but adjusted to the script's specifics. Do not copy directly; make it original but evocative. Ensure the title is around 100 characters (including spaces). Use proper German capitalization and punctuation.\n\nABSOLUTE RULE - NO EXCEPTIONS: NEVER USE CHARACTER NAMES IN THE THUMBNAIL TEXT\nViewers have never heard this story before. They don't know who \"Laura\", \"Jonas\", \"Maria\", or any other character is. Using names is meaningless and confusing to them.\nWRONG EXAMPLES (NEVER DO THIS):\n\n❌ \"Laura will dich nicht dabei haben\"\n❌ \"Jonas sagte mir die Wahrheit\"\n❌ \"Maria rief mich an\"\n\nCORRECT EXAMPLES (ALWAYS DO THIS):\n\n✅ \"Meine Schwiegertochter will dich nicht dabei haben\"\n✅ \"Mein Sohn sagte mir die Wahrheit\"\n✅ \"Die Frau meines Sohnes rief mich an\"\n✅ \"Der Nachbar konfrontierte mich\"\n\nBefore you write any thumbnail text, check it: Does it contain ANY personal name? If yes, replace it immediately with a relationship descriptor (Schwiegertochter, mein Sohn, die Frau, der Mann, meine Mutter, etc.).\nBase your generations on the \"script\" for accuracy, ensuring they reflect the story's essence while drawing inspiration from the English thumbnail-text and title for tone and impact.\nOUTPUT FORMAT:\n\nReturn ONLY a raw JSON array\nNO markdown formatting, NO code blocks, NO wrapper objects\nJust the plain JSON array starting with [ and ending with ]\n\nDo not include the original English fields or the script in your output.\n\n\nFINAL OUTPUT FORMAT\n[\n  {\n    \"thumbnail_text\": \"Sohn meldet sich nach 13 Jahren Funkstille: „Als dein Sohn steht mir ein Teil des Lottogewinns zu!“\",\n    \"title\": \"Sohn fordert Erbe nach 13 Jahren Funkstille – dann zeige ich ihm die Wahrheit!\"\n  }\n]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        640,
+        -96
+      ],
+      "id": "cb34ca2d-6c9a-4860-996a-326f3cd49079",
+      "name": "Generate Packaging"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "workspaceId": "wtu1usuc",
+        "projectId": "={{ $('trigger').first().json['Channel Base Name'] }}",
+        "table": "={{ $('trigger').first().json['Channel Table Name'] }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "=Id",
+              "fieldValue": "={{ $('trigger').first().json.Id }}"
+            },
+            {
+              "fieldName": "Video Packaging",
+              "fieldValue": "=Thumbnail Text:\n{{ $json.output[0].thumbnail_text }}\n\nTitle:\n{{ $json.output[0].title }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "1a37162b-1f3a-43b1-b271-791e55c812ae",
+      "name": "Add Packaging to Row",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "JoY3JTA7ut2SRv1l",
+          "name": "German Family Drama - NocoDB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "OCR the text on this image. *Only* Reply with the OCR'd text. Also keep in mind the exact punctuation of the Images text. Do not include the Newlines (\\n) in your response.",
+        "options": {
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        272,
+        -96
+      ],
+      "id": "3379cea9-4692-417a-b513-4dcd2b2c110e",
+      "name": "Output Original Thumbnail Text"
+    },
+    {
+      "parameters": {
+        "content": "## Prepare Input Data",
+        "height": 208,
+        "width": 800,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -144
+      ],
+      "id": "4683a5ba-cbd9-4769-b6f2-443a9efe98d4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Generate Packaging & Add to Project",
+        "height": 208,
+        "width": 592,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -144
+      ],
+      "id": "90e97541-a0c6-4013-a4e6-d53f62086a8b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        272,
+        80
+      ],
+      "id": "46c2dce9-7901-4043-91c2-5bcf26d806cf",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "jyPiseA5iZX10nrt",
+          "name": "German Family Drama - Google Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        640,
+        80
+      ],
+      "id": "944e7aa7-6545-4b29-b688-f3e3713469e4",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "jyPiseA5iZX10nrt",
+          "name": "German Family Drama - Google Gemini"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-21T11:11:00.741Z",
+      "createdAt": "2025-12-21T11:11:00.741Z",
+      "role": "workflow:owner",
+      "workflowId": "hyE2T0ylO68igbcA",
+      "projectId": "Sz2vPJqZDAwEzZJp"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-12-21T17:47:52.639Z",
+  "versionId": "dac3eaf5-72aa-446f-afd5-5a9f3db6a94a"
+}
