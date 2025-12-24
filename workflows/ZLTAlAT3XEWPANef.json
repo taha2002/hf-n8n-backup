@@ -1,0 +1,2038 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-23T10:09:48.637Z",
+    "createdAt": "2025-12-23T10:03:53.714Z",
+    "versionId": "1297f2d4-87c1-4b8c-869b-061403bc0676",
+    "workflowId": "ZLTAlAT3XEWPANef",
+    "nodes": [
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"scene_prompts\": [\n    {\n      \"prompt_id\": \"scene_01\",\n      \"prompt_text\": \"[detailed scene description with character action and environment]\"\n    },\n    {\n      \"prompt_id\": \"scene_02\",\n      \"prompt_text\": \"[detailed scene description]\"\n    }\n  ]\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          -656,
+          64
+        ],
+        "id": "526e0b9b-9aa7-4150-8e7a-5b92d36796d6",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "output.scene_prompts",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          -512,
+          -96
+        ],
+        "id": "5994236b-27dd-40f1-b1b7-753790cc92e2",
+        "name": "Split Out"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a580467e-b879-46a4-8ef2-fbe5a42ceece",
+                "name": "prompt-text",
+                "value": "={{ $json.prompt_text }}",
+                "type": "string"
+              },
+              {
+                "id": "b77c363d-31aa-4e6a-a851-8c8d641f9615",
+                "name": "prompt-id",
+                "value": "={{ $json.prompt_id }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -192,
+          128
+        ],
+        "id": "44cf2723-867f-49e3-8612-1b4409c88b32",
+        "name": "set-loop-data"
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -992,
+          -96
+        ],
+        "id": "dfeac026-6c7d-4b5d-9316-146f2e58c75a",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Script:\n{{ $json.Script }}\n",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=You are an AI agent that generates image prompts for visual storytelling. Your task is to analyze a script and create prompts for consistent character imagery. The input script might be in German but still only output English.\nInput: A story script\nTask: Generate 6 scene image prompts for the main female character in different story situations.\nRequirements:\n\nCreate 6 scene prompts featuring the same character in different story situations\nAll scene prompts should depict moments that do not reveal the ending/finale.\nCharacter's emotional state should reflect early story emotions (sad, frustrated, struggling, contemplative, worried, etc.)\nEach scene prompt should be specific enough to generate a coherent image while maintaining character consistency\nEach scene prompt must begin with a detailed character description to ensure visual consistency across all scenes\n\nIMPORTANT CHARACTER APPEAL GUIDELINES:\n\nAvoid words like: wrinkles, weary, tired, weathered, aged, worn\n\nOutput Format (JSON):\njson{\n  \"scene_prompts\": [\n    {\n      \"prompt_id\": \"scene_01\",\n      \"prompt_text\": \"[detailed scene description with character action and environment]\"\n    },\n    {\n      \"prompt_id\": \"scene_02\",\n      \"prompt_text\": \"[detailed scene description]\"\n    }\n    // ... continue for all 6 scenes\n  ]\n}\nPrompt Guidelines:\nScene prompts: Include setting, action, emotion, clothing when relevant, body language. Maintain consistency by starting each prompt with the same detailed character description.\nUse clear, descriptive language suitable for image generation models.\nAvoid abstract concepts; focus on visual elements.\nFor the scene generation prompts, always use this template:\n\"Show a 70 year old German woman with blue eyes, [detailed description including facial features, hair, build, typical clothing, distinguishing characteristics, posture]. [Then describe the scene, action, etc.]\" (Total max length of five sentences but can be shorter if not necessary)\ne.g.: \"Show a 70 year old German woman with blue eyes, with silver hair styled in a neat bob, wearing a comfortable cardigan and reading glasses. She is sitting in the kitchen, reading the newspaper.\"\nThe character description at the beginning of each prompt should be super detailed and consistent across all 6 prompts to ensure the same character appears in every scene. Include facial features, hair color/style, build, posture, distinguishing characteristics, and typical clothing style.\nIf important, all the scenes would happen in Germany.\nMake SURE all Prompts NEVER mention anything graphic, and do not show any kids or people under the age of 18! Also none of the Image prompts should contain knives, blood or anything NSFW."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          -848,
+          -96
+        ],
+        "id": "e069d1fc-b2f8-428d-b4f8-9bf14857082b",
+        "name": "Generate Image Prompts",
+        "retryOnFail": true
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -352,
+          -96
+        ],
+        "id": "94aa6b92-98a7-49cf-926a-89fc6f0e7f1a",
+        "name": "Loop Over Prompts"
+      },
+      {
+        "parameters": {
+          "operation": "upload",
+          "bucketName": "={{ $('When Executed by Another Workflow').first().json['Storage Bucket'] }}",
+          "fileName": "={{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/images/{{ $('set-loop-data').item.json['prompt-id'] }}.jpg",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          800,
+          128
+        ],
+        "id": "ae676d93-ce77-4ce0-848a-1381e1a0d1b1",
+        "name": "Upload Image to Project",
+        "credentials": {
+          "s3": {
+            "id": "K3Ji1vSaw4y5ofv7",
+            "name": "German Family Drama - S3 account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('When Executed by Another Workflow').first().json['Video Render API'] }}/v1/ffmpeg/compose",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "x-api-key",
+                "value": "={{ $('When Executed by Another Workflow').item.json['Video Render API key'] }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"inputs\": [\n    {\n      \"file_url\": \"{{ $('When Executed by Another Workflow').item.json['Storage Bucket PUBLIC URL'] }}{{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/images/{{ $('set-loop-data').item.json['prompt-id'] }}.jpg\"\n    }\n  ],\n  \"filters\": [\n    {\n      \"filter\": \"[0:v]format=yuv444p,scale=5760:3240,zoompan=z='1+on*0.0005':d=300:x='trunc(iw/2-(iw/zoom/2))':y='trunc(ih/2-(ih/zoom/2))':s=1920x1080:fps=30,format=yuv420p[v]\"\n    }\n  ],\n  \"outputs\": [\n    {\n      \"options\": [\n        {\"option\": \"-map\", \"argument\": \"[v]\"},\n        {\"option\": \"-c:v\", \"argument\": \"libx264\"},\n        {\"option\": \"-r\", \"argument\": \"30\"},\n        {\"option\": \"-t\", \"argument\": \"10\"},\n        {\"option\": \"-crf\", \"argument\": \"18\"},\n        {\"option\": \"-preset\", \"argument\": \"slow\"},\n        {\"option\": \"-f\", \"argument\": \"mp4\"}\n      ]\n    }\n  ],\n  \"metadata\": {\n    \"thumbnail\": true,\n    \"filesize\": true,\n    \"duration\": true,\n    \"bitrate\": true,\n    \"encoder\": true\n  },\n  \"id\": \"zoom_effect_{{ $('set-loop-data').first().json['prompt-id'] }}\"\n}",
+          "options": {
+            "timeout": 999999999
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1024,
+          128
+        ],
+        "id": "3d07e4c7-a80d-4816-b526-d9a47283dfba",
+        "name": "Add Zoom In Effect to Image"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.response[0].file_url.replace(\"http://minio\", $('When Executed by Another Workflow').first().json['Video Render API'].replace('http://', '').replace(':8081', '')) }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1232,
+          128
+        ],
+        "id": "abf16ff5-c61c-456b-aeb6-65adca3634c7",
+        "name": "Download Image w/ Zoom In Effect"
+      },
+      {
+        "parameters": {
+          "operation": "upload",
+          "bucketName": "={{ $('When Executed by Another Workflow').first().json['Storage Bucket'] }}",
+          "fileName": "={{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/clips/{{ $('set-loop-data').item.json['prompt-id'] }}.mp4",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          1600,
+          416
+        ],
+        "id": "48b23681-27d9-4c4a-a46b-9b95c6b2a8da",
+        "name": "Upload Image w/ Zoom In Effect to Project",
+        "credentials": {
+          "s3": {
+            "id": "K3Ji1vSaw4y5ofv7",
+            "name": "German Family Drama - S3 account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          -192,
+          -112
+        ],
+        "id": "4d391014-962f-4fe3-8d6e-4c931d19c7c8",
+        "name": "Limit"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "5a712e68-9c2a-4ca7-877f-14a188122009",
+                "name": "Total Clips Number",
+                "value": "=6",
+                "type": "string"
+              },
+              {
+                "id": "e5d6ed9f-8ce3-495c-bc42-ff6286fc79df",
+                "name": "Clips Download Base URL",
+                "value": "={{ $('When Executed by Another Workflow').item.json['Storage Bucket PUBLIC URL'] }}{{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/clips/",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -48,
+          -112
+        ],
+        "id": "42c5d2c9-8560-4815-9a50-4e895e3111f3",
+        "name": "Render Input Data"
+      },
+      {
+        "parameters": {
+          "jsCode": "// --- n8n Code Node: FFmpeg JSON Payload Builder ---\n// Get the input variables from the previous node.\nconst total_video_clips = parseInt($json[\"Total Clips Number\"]);\nconst b_roll_download_path = $json[\"Clips Download Base URL\"];\n\n// 1. Build the 'inputs' array.\nconst inputs = [];\nfor (let i = 1; i <= total_video_clips; i++) {\n  // Format scene number with leading zero (scene_01.mp4, scene_02.mp4, etc.)\n  const sceneNumber = String(i).padStart(2, '0');\n  inputs.push({\n    \"file_url\": `${b_roll_download_path}scene_${sceneNumber}.mp4`\n  });\n}\n\n// 2. Build the 'filters' array with SAR normalization.\nconst filter_parts = [];\nfor (let i = 0; i < total_video_clips; i++) {\n  filter_parts.push(`[${i}:v]setsar=1/1[v${i}]`);\n}\n\nconst concat_inputs = [];\nfor (let i = 0; i < total_video_clips; i++) {\n  concat_inputs.push(`[v${i}]`);\n}\n\nconst concat_part = `${concat_inputs.join('')}concat=n=${total_video_clips}:v=1:a=0[v]`;\nconst full_filter = filter_parts.join(';') + ';' + concat_part;\n\nconst filters = [{\n  \"filter\": full_filter\n}];\n\n// 3. Build the 'outputs' array.\nconst outputs = [{\n  \"options\": [\n    {\n      \"option\": \"-map\",\n      \"argument\": \"[v]\"\n    },\n    {\n      \"option\": \"-c:v\",\n      \"argument\": \"libx264\"\n    },\n    {\n      \"option\": \"-preset\",\n      \"argument\": \"veryfast\"\n    },\n    {\n      \"option\": \"-r\",\n      \"argument\": \"30\" // Back to 30 fps as requested\n    },\n    {\n      \"option\": \"-f\",\n      \"argument\": \"mp4\"\n    }\n  ],\n  \"file_url\": \"output.mp4\"\n}];\n\n// 4. Construct the final JSON payload.\nconst payload = {\n  inputs: inputs,\n  filters: filters,\n  outputs: outputs\n};\n\nreturn [{\n  json: payload\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          128,
+          -112
+        ],
+        "id": "1156e37a-1f6b-4dae-b9d5-224cd44cc976",
+        "name": "Generate Render API Payload"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('When Executed by Another Workflow').first().json['Video Render API'] }}/v1/ffmpeg/compose",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "x-api-key",
+                "value": "={{ $('When Executed by Another Workflow').item.json['Video Render API key'] }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json) }}",
+          "options": {
+            "timeout": 3000000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          304,
+          -112
+        ],
+        "id": "54e90ef1-0f99-4f9b-b8bd-392f0af52975",
+        "name": "Merge All Clips",
+        "retryOnFail": true,
+        "waitBetweenTries": 5000,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "yc2ReKc2XVj3rM9U",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.image_url }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          592,
+          128
+        ],
+        "id": "33bce865-0640-45e9-82a3-be30b2d6b23a",
+        "name": "Download Image"
+      },
+      {
+        "parameters": {
+          "content": "## Generate Image Prompts",
+          "height": 192,
+          "width": 624,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1024,
+          -144
+        ],
+        "id": "bbc3bd71-f2db-4a1d-a2dc-2756775c8a38",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## Generate B-Roll Footage",
+          "height": 544,
+          "width": 1680,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -208,
+          80
+        ],
+        "id": "727f8716-2264-4198-92a3-f235d8cacd7e",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## Render Final Loop Video",
+          "height": 224,
+          "width": 1104,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -208,
+          -160
+        ],
+        "id": "09abe864-a86c-42a0-ae05-aebf447677a0",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.response[0].file_url.replace(\"http://minio\", $('When Executed by Another Workflow').first().json['Video Render API'].replace('http://', '').replace(':8081', '')) }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          496,
+          -112
+        ],
+        "id": "7b8b72c2-ec21-49c9-9077-55cf6f003813",
+        "name": "Download Merged Clips Loop"
+      },
+      {
+        "parameters": {
+          "operation": "upload",
+          "bucketName": "={{ $('When Executed by Another Workflow').first().json['Storage Bucket'] }}",
+          "fileName": "={{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/clips/loop-video.mp4",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.s3",
+        "typeVersion": 1,
+        "position": [
+          704,
+          -112
+        ],
+        "id": "d5552db8-ebb7-4bfd-985a-365960ac1d46",
+        "name": "Upload Merged Clips Loop to Project",
+        "credentials": {
+          "s3": {
+            "id": "K3Ji1vSaw4y5ofv7",
+            "name": "German Family Drama - S3 account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "modelName": "models/gemini-2.5-flash-lite",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -848,
+          64
+        ],
+        "id": "e9fa8768-368c-42c2-9c8d-442766b50a21",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "jyPiseA5iZX10nrt",
+            "name": "German Family Drama - Google Gemini"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://mrfakename-z-image-turbo.hf.space/gradio_api/call/generate_image",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n\"data\": [\n\"{{ $json['prompt-text'] }}\",\n\t\t\t\t\t\t\t\n720,\n1280,\n9,\n42,\ntrue\n]}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -112,
+          368
+        ],
+        "id": "4d3ceed2-6068-45cd-bcc8-ee4f914bc661",
+        "name": "Generate Image"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://z-image.me/api/generate",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "origin",
+                "value": "https://z-image.me"
+              },
+              {
+                "name": "referer",
+                "value": "https://z-image.me/fr"
+              },
+              {
+                "name": "sec-ch-ua-platform",
+                "value": "\"Windows\""
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "prompt",
+                "value": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"
+              },
+              {
+                "name": "width",
+                "value": "1280"
+              },
+              {
+                "name": "height",
+                "value": "720"
+              },
+              {
+                "name": "style",
+                "value": "default"
+              },
+              {
+                "name": "lighting",
+                "value": "default"
+              },
+              {
+                "name": "composition",
+                "value": "default"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          288,
+          368
+        ],
+        "id": "9d8e159c-0bf4-4c48-b449-4d490a6c9bff",
+        "name": "Generate Image1",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "url": "=https://z-image.me/api/generate/status/{{ $json.taskId }}",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "provider",
+                "value": "ModelScope"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "referer",
+                "value": "https://z-image.me/fr"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          736,
+          368
+        ],
+        "id": "ed0aac92-6778-46c3-a617-364a3759b9e1",
+        "name": "Check Status",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.status }}",
+                      "rightValue": "completed",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "ffc3f619-25eb-4189-b8eb-a1f3f26ff507"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "completed"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "2a5d39eb-e4b2-4ca2-9dea-af7f856e2603",
+                      "leftValue": "={{ $json.status }}",
+                      "rightValue": "processing",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "processing"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          896,
+          368
+        ],
+        "id": "042c9ae6-f3b2-405b-bf57-7e68d382e28e",
+        "name": "Finished? -> Download / Processing? -> Wait",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "amount": 15
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          480,
+          368
+        ],
+        "id": "b754c5cf-f528-4d74-a55d-dc9c9d9940d4",
+        "name": "Wait 15 Sec1",
+        "webhookId": "81ad450a-324f-425c-8157-ee418d12dcd5",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get first input item\nconst item = $input.first();\n\n// The HTTP node response\nconst raw = item.json;\n\nif (!raw) {\n    throw new Error(\"No data field found\");\n}\n\nconst output = raw?.response?.stdout;\n\nif (!output) {\n    throw new Error(\"Did not receive output\");\n}\n\nlet parsed;\ntry {\n    parsed = JSON.parse(output.trim());\n} catch (err) {\n    throw new Error(\"Failed to parse stdout as JSON: \" + err.message);\n}\n\nif(!parsed?.success){\n  throw new Error(\"Failed to get image \");\n}\n\n// Return clean JSON to n8n\nreturn [\n    {\n        json: parsed\n    }\n];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          400,
+          128
+        ],
+        "id": "a7ba478e-cf2a-4a6c-ac81-192fdb70b225",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "amount": 1
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          80,
+          368
+        ],
+        "id": "1bf64bbf-3c8e-4c64-8c08-7b09f1be3384",
+        "name": "Wait 15 Sec",
+        "webhookId": "81ad450a-324f-425c-8157-ee418d12dcd5"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('When Executed by Another Workflow').item.json['Video Render API'] }}/v1/code/execute/python",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "x-api-key",
+                "value": "={{ $('When Executed by Another Workflow').item.json['Video Render API key'] }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "code",
+                "value": "={{ $json.code }}"
+              }
+            ]
+          },
+          "options": {
+            "timeout": 100000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          208,
+          128
+        ],
+        "id": "da08d4b5-1ccb-4771-ba2f-54c08c2c11ef",
+        "name": "run python",
+        "retryOnFail": false
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "72eb47ad-43e7-4122-bafd-4ad0d0da9ce4",
+                "name": "code",
+                "value": "=import requests\nimport json\nimport time\n\ndef gradio_generate(space_url: str, data: list):\n    headers = {\"Content-Type\": \"application/json\"}\n\n    resp = requests.post(space_url, headers=headers, json={\"data\": data})\n    resp.raise_for_status()\n    event_id = resp.json().get(\"event_id\")\n    if not event_id:\n        return {\"success\": False, \"image_url\": None, \"path\": None, \"mime\": None, \"size\": None, \"event_id\": None}\n\n    time.sleep(4)\n\n    sse_url = space_url + \"/\" + event_id\n    last_img_info = None\n    with requests.get(sse_url, stream=True) as r:\n        r.raise_for_status()\n        buffer = \"\"\n        for line_bytes in r.iter_lines(decode_unicode=True):\n            line = line_bytes.strip()\n            if line.startswith(\"data:\"):\n                buffer += line[len(\"data:\"):].strip()\n            elif line == \"\":\n                if buffer:\n                    try:\n                        data_json = json.loads(buffer)\n                        if isinstance(data_json, list) and data_json[0]:\n                            files = data_json[0]\n                            last_file = files[-1].get(\"image\", {})\n                            if last_file and \"url\" in last_file:\n                                last_img_info = {\n                                    \"success\": True,\n                                    \"image_url\": last_file.get(\"url\"),\n                                    \"path\": last_file.get(\"path\"),\n                                    \"mime\": last_file.get(\"mime_type\"),\n                                    \"size\": last_file.get(\"size\"),\n                                    \"event_id\": event_id\n                                }\n                        buffer = \"\"\n                    except json.JSONDecodeError:\n                        buffer = \"\"\n    if last_img_info:\n        return last_img_info\n    return {\"success\": False, \"image_url\": None, \"path\": None, \"mime\": None, \"size\": None, \"event_id\": event_id}\n\n\nif __name__ == \"__main__\":\n    space_url = \"https://jinguotianxin-z-image-turbo.hf.space/gradio_api/call/generate\"\n    prompt_text = \"{{ $json['prompt-text'] }}\"\n    data = [prompt_text,\"1536x864 ( 16:9 )\",42,8,3,True,[]]\n    result = gradio_generate(\"https://cors.uiisp.top/?\" + space_url, data)\n    print(json.dumps(result, indent=2))",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          0,
+          128
+        ],
+        "id": "ecb58701-dbd2-4930-825f-25499661a9eb",
+        "name": "python code"
+      }
+    ],
+    "connections": {
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Generate Image Prompts",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Prompts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "set-loop-data": {
+        "main": [
+          [
+            {
+              "node": "python code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Generate Image Prompts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Image Prompts": {
+        "main": [
+          [
+            {
+              "node": "Split Out",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Prompts": {
+        "main": [
+          [
+            {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "set-loop-data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Image to Project": {
+        "main": [
+          [
+            {
+              "node": "Add Zoom In Effect to Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Zoom In Effect to Image": {
+        "main": [
+          [
+            {
+              "node": "Download Image w/ Zoom In Effect",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Image w/ Zoom In Effect": {
+        "main": [
+          [
+            {
+              "node": "Upload Image w/ Zoom In Effect to Project",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Image w/ Zoom In Effect to Project": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Prompts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
+              "node": "Render Input Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Render Input Data": {
+        "main": [
+          [
+            {
+              "node": "Generate Render API Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Render API Payload": {
+        "main": [
+          [
+            {
+              "node": "Merge All Clips",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge All Clips": {
+        "main": [
+          [
+            {
+              "node": "Download Merged Clips Loop",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Image": {
+        "main": [
+          [
+            {
+              "node": "Upload Image to Project",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Merged Clips Loop": {
+        "main": [
+          [
+            {
+              "node": "Upload Merged Clips Loop to Project",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Generate Image Prompts",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Image": {
+        "main": [
+          [
+            {
+              "node": "Wait 15 Sec",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Status": {
+        "main": [
+          [
+            {
+              "node": "Finished? -> Download / Processing? -> Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Finished? -> Download / Processing? -> Wait": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Wait 15 Sec1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait 15 Sec1": {
+        "main": [
+          [
+            {
+              "node": "Check Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Image1": {
+        "main": [
+          [
+            {
+              "node": "Wait 15 Sec1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Download Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait 15 Sec": {
+        "main": [
+          [
+            {
+              "node": "Generate Image1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "run python": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "python code": {
+        "main": [
+          [
+            {
+              "node": "run python",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "taha bouras",
+    "name": "Version 1297f2d4",
+    "description": ""
+  },
+  "activeVersionId": "1297f2d4-87c1-4b8c-869b-061403bc0676",
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Image Prompts",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set-loop-data": {
+      "main": [
+        [
+          {
+            "node": "python code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Generate Image Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image Prompts": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Prompts": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set-loop-data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image to Project": {
+      "main": [
+        [
+          {
+            "node": "Add Zoom In Effect to Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Zoom In Effect to Image": {
+      "main": [
+        [
+          {
+            "node": "Download Image w/ Zoom In Effect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image w/ Zoom In Effect": {
+      "main": [
+        [
+          {
+            "node": "Upload Image w/ Zoom In Effect to Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image w/ Zoom In Effect to Project": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Render Input Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Input Data": {
+      "main": [
+        [
+          {
+            "node": "Generate Render API Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Render API Payload": {
+      "main": [
+        [
+          {
+            "node": "Merge All Clips",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Clips": {
+      "main": [
+        [
+          {
+            "node": "Download Merged Clips Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Upload Image to Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Merged Clips Loop": {
+      "main": [
+        [
+          {
+            "node": "Upload Merged Clips Loop to Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Image Prompts",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image": {
+      "main": [
+        [
+          {
+            "node": "Wait 15 Sec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Finished? -> Download / Processing? -> Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finished? -> Download / Processing? -> Wait": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait 15 Sec1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15 Sec1": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image1": {
+      "main": [
+        [
+          {
+            "node": "Wait 15 Sec1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15 Sec": {
+      "main": [
+        [
+          {
+            "node": "Generate Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "run python": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "python code": {
+      "main": [
+        [
+          {
+            "node": "run python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-21T11:11:45.284Z",
+  "id": "ZLTAlAT3XEWPANef",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "4.1 Image B-Roll Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"scene_prompts\": [\n    {\n      \"prompt_id\": \"scene_01\",\n      \"prompt_text\": \"[detailed scene description with character action and environment]\"\n    },\n    {\n      \"prompt_id\": \"scene_02\",\n      \"prompt_text\": \"[detailed scene description]\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -656,
+        64
+      ],
+      "id": "526e0b9b-9aa7-4150-8e7a-5b92d36796d6",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.scene_prompts",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        -96
+      ],
+      "id": "5994236b-27dd-40f1-b1b7-753790cc92e2",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a580467e-b879-46a4-8ef2-fbe5a42ceece",
+              "name": "prompt-text",
+              "value": "={{ $json.prompt_text }}",
+              "type": "string"
+            },
+            {
+              "id": "b77c363d-31aa-4e6a-a851-8c8d641f9615",
+              "name": "prompt-id",
+              "value": "={{ $json.prompt_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        128
+      ],
+      "id": "44cf2723-867f-49e3-8612-1b4409c88b32",
+      "name": "set-loop-data"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -992,
+        -96
+      ],
+      "id": "dfeac026-6c7d-4b5d-9316-146f2e58c75a",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Script:\n{{ $json.Script }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an AI agent that generates image prompts for visual storytelling. Your task is to analyze a script and create prompts for consistent character imagery. The input script might be in German but still only output English.\nInput: A story script\nTask: Generate 6 scene image prompts for the main female character in different story situations.\nRequirements:\n\nCreate 6 scene prompts featuring the same character in different story situations\nAll scene prompts should depict moments that do not reveal the ending/finale.\nCharacter's emotional state should reflect early story emotions (sad, frustrated, struggling, contemplative, worried, etc.)\nEach scene prompt should be specific enough to generate a coherent image while maintaining character consistency\nEach scene prompt must begin with a detailed character description to ensure visual consistency across all scenes\n\nIMPORTANT CHARACTER APPEAL GUIDELINES:\n\nAvoid words like: wrinkles, weary, tired, weathered, aged, worn\n\nOutput Format (JSON):\njson{\n  \"scene_prompts\": [\n    {\n      \"prompt_id\": \"scene_01\",\n      \"prompt_text\": \"[detailed scene description with character action and environment]\"\n    },\n    {\n      \"prompt_id\": \"scene_02\",\n      \"prompt_text\": \"[detailed scene description]\"\n    }\n    // ... continue for all 6 scenes\n  ]\n}\nPrompt Guidelines:\nScene prompts: Include setting, action, emotion, clothing when relevant, body language. Maintain consistency by starting each prompt with the same detailed character description.\nUse clear, descriptive language suitable for image generation models.\nAvoid abstract concepts; focus on visual elements.\nFor the scene generation prompts, always use this template:\n\"Show a 70 year old German woman with blue eyes, [detailed description including facial features, hair, build, typical clothing, distinguishing characteristics, posture]. [Then describe the scene, action, etc.]\" (Total max length of five sentences but can be shorter if not necessary)\ne.g.: \"Show a 70 year old German woman with blue eyes, with silver hair styled in a neat bob, wearing a comfortable cardigan and reading glasses. She is sitting in the kitchen, reading the newspaper.\"\nThe character description at the beginning of each prompt should be super detailed and consistent across all 6 prompts to ensure the same character appears in every scene. Include facial features, hair color/style, build, posture, distinguishing characteristics, and typical clothing style.\nIf important, all the scenes would happen in Germany.\nMake SURE all Prompts NEVER mention anything graphic, and do not show any kids or people under the age of 18! Also none of the Image prompts should contain knives, blood or anything NSFW."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -848,
+        -96
+      ],
+      "id": "e069d1fc-b2f8-428d-b4f8-9bf14857082b",
+      "name": "Generate Image Prompts",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -352,
+        -96
+      ],
+      "id": "94aa6b92-98a7-49cf-926a-89fc6f0e7f1a",
+      "name": "Loop Over Prompts"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "={{ $('When Executed by Another Workflow').first().json['Storage Bucket'] }}",
+        "fileName": "={{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/images/{{ $('set-loop-data').item.json['prompt-id'] }}.jpg",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        800,
+        128
+      ],
+      "id": "ae676d93-ce77-4ce0-848a-1381e1a0d1b1",
+      "name": "Upload Image to Project",
+      "credentials": {
+        "s3": {
+          "id": "K3Ji1vSaw4y5ofv7",
+          "name": "German Family Drama - S3 account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('When Executed by Another Workflow').first().json['Video Render API'] }}/v1/ffmpeg/compose",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $('When Executed by Another Workflow').item.json['Video Render API key'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inputs\": [\n    {\n      \"file_url\": \"{{ $('When Executed by Another Workflow').item.json['Storage Bucket PUBLIC URL'] }}{{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/images/{{ $('set-loop-data').item.json['prompt-id'] }}.jpg\"\n    }\n  ],\n  \"filters\": [\n    {\n      \"filter\": \"[0:v]format=yuv444p,scale=5760:3240,zoompan=z='1+on*0.0005':d=300:x='trunc(iw/2-(iw/zoom/2))':y='trunc(ih/2-(ih/zoom/2))':s=1920x1080:fps=30,format=yuv420p[v]\"\n    }\n  ],\n  \"outputs\": [\n    {\n      \"options\": [\n        {\"option\": \"-map\", \"argument\": \"[v]\"},\n        {\"option\": \"-c:v\", \"argument\": \"libx264\"},\n        {\"option\": \"-r\", \"argument\": \"30\"},\n        {\"option\": \"-t\", \"argument\": \"10\"},\n        {\"option\": \"-crf\", \"argument\": \"18\"},\n        {\"option\": \"-preset\", \"argument\": \"slow\"},\n        {\"option\": \"-f\", \"argument\": \"mp4\"}\n      ]\n    }\n  ],\n  \"metadata\": {\n    \"thumbnail\": true,\n    \"filesize\": true,\n    \"duration\": true,\n    \"bitrate\": true,\n    \"encoder\": true\n  },\n  \"id\": \"zoom_effect_{{ $('set-loop-data').first().json['prompt-id'] }}\"\n}",
+        "options": {
+          "timeout": 999999999
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1024,
+        128
+      ],
+      "id": "3d07e4c7-a80d-4816-b526-d9a47283dfba",
+      "name": "Add Zoom In Effect to Image"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.response[0].file_url.replace(\"http://minio\", $('When Executed by Another Workflow').first().json['Video Render API'].replace('http://', '').replace(':8081', '')) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        128
+      ],
+      "id": "abf16ff5-c61c-456b-aeb6-65adca3634c7",
+      "name": "Download Image w/ Zoom In Effect"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "={{ $('When Executed by Another Workflow').first().json['Storage Bucket'] }}",
+        "fileName": "={{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/clips/{{ $('set-loop-data').item.json['prompt-id'] }}.mp4",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        416
+      ],
+      "id": "48b23681-27d9-4c4a-a46b-9b95c6b2a8da",
+      "name": "Upload Image w/ Zoom In Effect to Project",
+      "credentials": {
+        "s3": {
+          "id": "K3Ji1vSaw4y5ofv7",
+          "name": "German Family Drama - S3 account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -112
+      ],
+      "id": "4d391014-962f-4fe3-8d6e-4c931d19c7c8",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5a712e68-9c2a-4ca7-877f-14a188122009",
+              "name": "Total Clips Number",
+              "value": "=6",
+              "type": "string"
+            },
+            {
+              "id": "e5d6ed9f-8ce3-495c-bc42-ff6286fc79df",
+              "name": "Clips Download Base URL",
+              "value": "={{ $('When Executed by Another Workflow').item.json['Storage Bucket PUBLIC URL'] }}{{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/clips/",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -112
+      ],
+      "id": "42c5d2c9-8560-4815-9a50-4e895e3111f3",
+      "name": "Render Input Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- n8n Code Node: FFmpeg JSON Payload Builder ---\n// Get the input variables from the previous node.\nconst total_video_clips = parseInt($json[\"Total Clips Number\"]);\nconst b_roll_download_path = $json[\"Clips Download Base URL\"];\n\n// 1. Build the 'inputs' array.\nconst inputs = [];\nfor (let i = 1; i <= total_video_clips; i++) {\n  // Format scene number with leading zero (scene_01.mp4, scene_02.mp4, etc.)\n  const sceneNumber = String(i).padStart(2, '0');\n  inputs.push({\n    \"file_url\": `${b_roll_download_path}scene_${sceneNumber}.mp4`\n  });\n}\n\n// 2. Build the 'filters' array with SAR normalization.\nconst filter_parts = [];\nfor (let i = 0; i < total_video_clips; i++) {\n  filter_parts.push(`[${i}:v]setsar=1/1[v${i}]`);\n}\n\nconst concat_inputs = [];\nfor (let i = 0; i < total_video_clips; i++) {\n  concat_inputs.push(`[v${i}]`);\n}\n\nconst concat_part = `${concat_inputs.join('')}concat=n=${total_video_clips}:v=1:a=0[v]`;\nconst full_filter = filter_parts.join(';') + ';' + concat_part;\n\nconst filters = [{\n  \"filter\": full_filter\n}];\n\n// 3. Build the 'outputs' array.\nconst outputs = [{\n  \"options\": [\n    {\n      \"option\": \"-map\",\n      \"argument\": \"[v]\"\n    },\n    {\n      \"option\": \"-c:v\",\n      \"argument\": \"libx264\"\n    },\n    {\n      \"option\": \"-preset\",\n      \"argument\": \"veryfast\"\n    },\n    {\n      \"option\": \"-r\",\n      \"argument\": \"30\" // Back to 30 fps as requested\n    },\n    {\n      \"option\": \"-f\",\n      \"argument\": \"mp4\"\n    }\n  ],\n  \"file_url\": \"output.mp4\"\n}];\n\n// 4. Construct the final JSON payload.\nconst payload = {\n  inputs: inputs,\n  filters: filters,\n  outputs: outputs\n};\n\nreturn [{\n  json: payload\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        -112
+      ],
+      "id": "1156e37a-1f6b-4dae-b9d5-224cd44cc976",
+      "name": "Generate Render API Payload"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('When Executed by Another Workflow').first().json['Video Render API'] }}/v1/ffmpeg/compose",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $('When Executed by Another Workflow').item.json['Video Render API key'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 3000000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        -112
+      ],
+      "id": "54e90ef1-0f99-4f9b-b8bd-392f0af52975",
+      "name": "Merge All Clips",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "yc2ReKc2XVj3rM9U",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.image_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        592,
+        128
+      ],
+      "id": "33bce865-0640-45e9-82a3-be30b2d6b23a",
+      "name": "Download Image"
+    },
+    {
+      "parameters": {
+        "content": "## Generate Image Prompts",
+        "height": 192,
+        "width": 624,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        -144
+      ],
+      "id": "bbc3bd71-f2db-4a1d-a2dc-2756775c8a38",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Generate B-Roll Footage",
+        "height": 544,
+        "width": 1680,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        80
+      ],
+      "id": "727f8716-2264-4198-92a3-f235d8cacd7e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Render Final Loop Video",
+        "height": 224,
+        "width": 1104,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -160
+      ],
+      "id": "09abe864-a86c-42a0-ae05-aebf447677a0",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.response[0].file_url.replace(\"http://minio\", $('When Executed by Another Workflow').first().json['Video Render API'].replace('http://', '').replace(':8081', '')) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        -112
+      ],
+      "id": "7b8b72c2-ec21-49c9-9077-55cf6f003813",
+      "name": "Download Merged Clips Loop"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "={{ $('When Executed by Another Workflow').first().json['Storage Bucket'] }}",
+        "fileName": "={{ $('When Executed by Another Workflow').first().json['Videos Folder Path'] }}/{{ $('When Executed by Another Workflow').first().json['Project Name'] }}/clips/loop-video.mp4",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -112
+      ],
+      "id": "d5552db8-ebb7-4bfd-985a-365960ac1d46",
+      "name": "Upload Merged Clips Loop to Project",
+      "credentials": {
+        "s3": {
+          "id": "K3Ji1vSaw4y5ofv7",
+          "name": "German Family Drama - S3 account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        64
+      ],
+      "id": "e9fa8768-368c-42c2-9c8d-442766b50a21",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "jyPiseA5iZX10nrt",
+          "name": "German Family Drama - Google Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mrfakename-z-image-turbo.hf.space/gradio_api/call/generate_image",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"data\": [\n\"{{ $json['prompt-text'] }}\",\n\t\t\t\t\t\t\t\n720,\n1280,\n9,\n42,\ntrue\n]}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -112,
+        368
+      ],
+      "id": "4d3ceed2-6068-45cd-bcc8-ee4f914bc661",
+      "name": "Generate Image"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://z-image.me/api/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "origin",
+              "value": "https://z-image.me"
+            },
+            {
+              "name": "referer",
+              "value": "https://z-image.me/fr"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"
+            },
+            {
+              "name": "width",
+              "value": "1280"
+            },
+            {
+              "name": "height",
+              "value": "720"
+            },
+            {
+              "name": "style",
+              "value": "default"
+            },
+            {
+              "name": "lighting",
+              "value": "default"
+            },
+            {
+              "name": "composition",
+              "value": "default"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        368
+      ],
+      "id": "9d8e159c-0bf4-4c48-b449-4d490a6c9bff",
+      "name": "Generate Image1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "=https://z-image.me/api/generate/status/{{ $json.taskId }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "provider",
+              "value": "ModelScope"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "referer",
+              "value": "https://z-image.me/fr"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        368
+      ],
+      "id": "ed0aac92-6778-46c3-a617-364a3759b9e1",
+      "name": "Check Status",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ffc3f619-25eb-4189-b8eb-a1f3f26ff507"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "completed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2a5d39eb-e4b2-4ca2-9dea-af7f856e2603",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "processing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "processing"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        896,
+        368
+      ],
+      "id": "042c9ae6-f3b2-405b-bf57-7e68d382e28e",
+      "name": "Finished? -> Download / Processing? -> Wait",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        368
+      ],
+      "id": "b754c5cf-f528-4d74-a55d-dc9c9d9940d4",
+      "name": "Wait 15 Sec1",
+      "webhookId": "81ad450a-324f-425c-8157-ee418d12dcd5",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get first input item\nconst item = $input.first();\n\n// The HTTP node response\nconst raw = item.json;\n\nif (!raw) {\n    throw new Error(\"No data field found\");\n}\n\nconst output = raw?.response?.stdout;\n\nif (!output) {\n    throw new Error(\"Did not receive output\");\n}\n\nlet parsed;\ntry {\n    parsed = JSON.parse(output.trim());\n} catch (err) {\n    throw new Error(\"Failed to parse stdout as JSON: \" + err.message);\n}\n\nif(!parsed?.success){\n  throw new Error(\"Failed to get image \");\n}\n\n// Return clean JSON to n8n\nreturn [\n    {\n        json: parsed\n    }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        128
+      ],
+      "id": "a7ba478e-cf2a-4a6c-ac81-192fdb70b225",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        368
+      ],
+      "id": "1bf64bbf-3c8e-4c64-8c08-7b09f1be3384",
+      "name": "Wait 15 Sec",
+      "webhookId": "81ad450a-324f-425c-8157-ee418d12dcd5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('When Executed by Another Workflow').item.json['Video Render API'] }}/v1/code/execute/python",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $('When Executed by Another Workflow').item.json['Video Render API key'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "code",
+              "value": "={{ $json.code }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 100000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        128
+      ],
+      "id": "da08d4b5-1ccb-4771-ba2f-54c08c2c11ef",
+      "name": "run python",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72eb47ad-43e7-4122-bafd-4ad0d0da9ce4",
+              "name": "code",
+              "value": "=import requests\nimport json\nimport time\n\ndef gradio_generate(space_url: str, data: list):\n    headers = {\"Content-Type\": \"application/json\"}\n\n    resp = requests.post(space_url, headers=headers, json={\"data\": data})\n    resp.raise_for_status()\n    event_id = resp.json().get(\"event_id\")\n    if not event_id:\n        return {\"success\": False, \"image_url\": None, \"path\": None, \"mime\": None, \"size\": None, \"event_id\": None}\n\n    time.sleep(4)\n\n    sse_url = space_url + \"/\" + event_id\n    last_img_info = None\n    with requests.get(sse_url, stream=True) as r:\n        r.raise_for_status()\n        buffer = \"\"\n        for line_bytes in r.iter_lines(decode_unicode=True):\n            line = line_bytes.strip()\n            if line.startswith(\"data:\"):\n                buffer += line[len(\"data:\"):].strip()\n            elif line == \"\":\n                if buffer:\n                    try:\n                        data_json = json.loads(buffer)\n                        if isinstance(data_json, list) and data_json[0]:\n                            files = data_json[0]\n                            last_file = files[-1].get(\"image\", {})\n                            if last_file and \"url\" in last_file:\n                                last_img_info = {\n                                    \"success\": True,\n                                    \"image_url\": last_file.get(\"url\"),\n                                    \"path\": last_file.get(\"path\"),\n                                    \"mime\": last_file.get(\"mime_type\"),\n                                    \"size\": last_file.get(\"size\"),\n                                    \"event_id\": event_id\n                                }\n                        buffer = \"\"\n                    except json.JSONDecodeError:\n                        buffer = \"\"\n    if last_img_info:\n        return last_img_info\n    return {\"success\": False, \"image_url\": None, \"path\": None, \"mime\": None, \"size\": None, \"event_id\": event_id}\n\n\nif __name__ == \"__main__\":\n    space_url = \"https://jinguotianxin-z-image-turbo.hf.space/gradio_api/call/generate\"\n    prompt_text = \"{{ $json['prompt-text'] }}\"\n    data = [prompt_text,\"1536x864 ( 16:9 )\",42,8,3,True,[]]\n    result = gradio_generate(\"https://cors.uiisp.top/?\" + space_url, data)\n    print(json.dumps(result, indent=2))",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        128
+      ],
+      "id": "ecb58701-dbd2-4930-825f-25499661a9eb",
+      "name": "python code"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "Channel Table Name": "mgz8wkrrkbktpef",
+          "Channel Base Name": "p7903f0ck8ocsqt",
+          "Worker Table Name": "m0jfpnipilf8qr7",
+          "Script": "Der Schlüssel bohrt sich wie eine Eisnadel in meine Handfläche, während ich ihn mit zitternden Fingern im alten Schloss herumdrehe und das kalte Metall einen Widerstand leistet, den ich nur zu gut von früher kenne. Das Schloss ist störrisch, genau wie dieses Haus es schon immer war, doch ich bin heute stärker als damals und mit einem hässlichen, kreischenden Quietschen gibt der Mechanismus endlich nach. Die schwere Eichentür schwingt auf und ein Schwall aus abgestandener, muffiger Luft schlägt mir entgegen, der so gar nichts mehr mit dem warmen Duft nach Bienenwachs und Apfelkuchen zu tun hat, den mein Vater hier früher verbreitet hat. Ich trete über die Schwelle und meine Designer Absätze hämmern auf dem verstaubten Parkett wie die Schläge eines Richters, der gerade ein Urteil verkündet. Jeder Schritt wirbelt kleine Wolken aus Dreck auf und ich sehe entsetzt, dass die Tapeten an den Wänden in langen, gelblichen Streifen herunterhängen, als hätte das Haus selbst jede Lust am Leben verloren. Wo ist das prachtvolle Heim geblieben, aus dem man mich vor genau fünf Jahren mit nichts als einem einzigen Müllsack voller Kleider mitten in der Nacht vertrieben hat? Mein Herz hämmert in meiner Brust wie ein gefangener Vogel, der verzweifelt gegen seine Gitterstäbe schlägt, während ich den langen Flur entlangschreite. Wer zur Hölle sind Sie? Und was machen Sie in meinem Haus? gellt plötzlich eine schrille, unnatürlich hohe Stimme aus dem Wohnzimmer am Ende des Flurs. Ich bleibe stehen und ziehe die Schultern nach hinten, während ich spüre, wie die Kälte in mir zu einer festen Mauer wird. Christa stolpert in den Flur und hält sich am Türrahmen fest, ihr Haar ist ein einziges Nest aus ungepflegten, fettigen Strähnen und in ihrer rechten Hand schwenkt sie ein halbvolles Weinglas, dessen Inhalt bedrohlich nah am Rand schwappt. Sie starrt mich an, aber ihre Augen sind glasig und unkonzentriert, und ich erkenne sofort, dass sie keine Ahnung hat, wer da vor ihr steht. Für sie bin ich nur eine fremde Frau in einem teuren Mantel, eine Eindringling in ihrem verfallenen Reich. Sie erkennt das verängstigte Mädchen nicht wieder, das sie damals weinend auf dem Gehweg stehen ließ. Ich spüre, wie die Wut in mir aufsteigt, heiß und brennend, aber ich zwinge mich zur Ruhe. Bevor wir erfahren, wie Christa auf das Unfassbare reagiert schreibt uns doch mal in die Kommentare von wo aus ihr zuschaut und wie spät es bei euch gerade ist! Ich lasse meinen Blick langsam und demonstrativ über ihr nachlässiges Äußeres wandern, über den fleckigen Morgenmantel und das aufgedunsene Gesicht. Es ist nicht mehr dein Haus, Christa, sage ich leise und meine Stimme klingt so fest und schneidend, dass sie selbst zusammenzuckt. Was hast du da gerade gesagt? krächzt sie und macht einen unsicheren Schritt auf mich zu, wobei sie beinahe über ihre eigenen Füße stolpert. Verschwinde sofort aus meinem Flur, du eingebildete Ziege, bevor ich die Polizei rufe und dich wegen Hausfriedensbruch einsperren lasse! Ich lache kurz auf, ein trockenes, freudloses Geräusch, das in den leeren Räumen unheimlich widerhallt. Oh bitte, ruf sie an, Christa, das würde die Sache nur beschleunigen, entgegne ich und greife in meine Ledertasche, um das Dokument hervorzuholen, das ich seit Wochen wie einen wertvollen Schatz mit mir herumtrage. In diesem Moment höre ich oben ein heftiges Poltern und schwere, hastige Schritte rasen über den Boden der oberen Etage. Felix. Ich kenne diesen schweren Gang, diese rücksichtslose Art, wie er die Stufen nimmt, als müsste die ganze Welt Platz für ihn machen. Er stürmt die Treppe herunter, die Brust aufgebläht wie ein stolzer Pfau, das Gesicht rot angelaufen vor Zorn. Wer ist das, Mama? schreit er schon, bevor er überhaupt unten angekommen ist. Welches Flittchen glaubt hier einfach so reinspazieren zu können? Er springt die letzten drei Stufen herab und baut sich drohend vor mir auf, die Fäuste geballt, bereit mich einzuschüchtern, wie er es früher tausendmal getan hat. Doch dann sieht er mir direkt in die Augen und ich sehe den exakten Moment, in dem der Groschen fällt. Das Atmen fällt ihm plötzlich schwer und sein Gesicht verliert jede Farbe, während sein Mund offen stehen bleibt. Jennifer? presst er hervor und seine Stimme bricht am Ende fast weg. Ich antworte nicht, sondern knalle die notariell beglaubigte Urkunde mit einer solchen Wucht auf den staubigen Konsoltisch, dass der Staub wie eine kleine Explosion in die Luft wirbelt. Das Papier knistert in der plötzlichen Stille des Hauses wie ein nahendes Unwetter. Lest es und zwar gründlich, befehle ich und sehe zu, wie Felix mit zitternden Fingern nach dem Dokument greift. Ich bin die anonyme Käuferin, die die Zwangsversteigerung in letzter Sekunde gestoppt hat, erkläre ich ihnen, während ich spüre, wie die Macht von ihnen abfließt und zu mir herüberwandert wie ein elektrischer Strom. Ich besitze jetzt jeden einzelnen Stein dieses Anwesens, jeden morschen Balken und jedes Staubkorn auf diesem Boden. Und ihr? Ihr seid ab sofort nichts weiter als Gäste, die ihre Miete seit Monaten nicht bezahlt haben und die ich jederzeit vor die Tür setzen kann. Christa starrt auf das offizielle Siegel des Notars und ihr Weinglas entgleitet ihren Fingern. Es zerschellt mit einem klirrenden Geräusch auf dem Parkett und der dunkle Wein breitet sich aus wie eine riesige Blutlache, die das Holz meines Vaters weiter ruiniert. Sie beginnt am ganzen Körper zu zittern, ein unkontrolliertes Beben, das sie alt und zerbrechlich wirken lässt. Das ist nicht wahr, das kann nicht wahr sein, stammelt sie und greift nach Felix Arm, der jedoch wie versteinert dasteht. Du lügst, Jennifer! Das Haus gehört uns, wir haben es geerbt! Ich mache einen Schritt auf sie zu und sie weicht instinktiv zurück, bis sie gegen die Wand prallt. Ihr habt gar nichts geerbt, außer Schulden und Schande, weil ihr zu gierig und zu faul wart, um das Erbe meines Vaters zu ehren, sage ich und merke, wie gut es sich anfühlt, diese Worte endlich laut auszusprechen. Ich besitze dieses Haus nun ganz offiziell und rechtmäßig. Und jetzt stellt sich nur noch eine Frage: Was zum Teufel soll ich jetzt mit zwei Versagern wie euch anfangen? Felix starrt auf seine Füße und ich sehe, wie sein ganzer Stolz wie ein Kartenhaus in sich zusammenfällt, während die Realität seiner Obdachlosigkeit vor seinem geistigen Auge auftaucht. Ich genieße diesen Anblick für einen kurzen, grausamen Moment, bevor ich mich umdrehe, um den Ruin zu begutachten, den sie aus meiner Kindheit gemacht haben. Es ist ein Sieg, ja, aber er schmeckt nach Asche und Staub, und ich weiß, dass das hier erst der Anfang meiner Abrechnung ist. Ich spüre ihre Blicke in meinem Rücken, eine Mischung aus blankem Entsetzen und unterwürfiger Angst, und ich weiß, dass ich sie genau dort habe, wo ich sie immer haben wollte. Unter meinen Füßen. Willkommen in meinem neuen Zuhause, sage ich leise zu mir selbst und das Echo meiner eigenen Stimme klingt wie ein Versprechen auf alles, was noch kommen wird.\nDieses Haus stinkt nach Vernachlässigung und gescheiterten Träumen, und bei jedem Atemzug fühle ich, wie sich mein Hals immer enger zuschnürt, bis ich kaum noch Luft bekomme. Ich wandere durch das Wohnzimmer und mein Blick sucht verzweifelt nach dem schwarzen glänzenden Steinway-Flügel meines Vaters, doch an seinem Platz steht jetzt nur noch ein billiges, wackeliges Regal aus Presspappe, vollgestopft mit kitschigen Plastikfiguren und leeren Schnapsflaschen. Sie haben alles verkauft, schießt es mir durch den Kopf, während die Wut in meinem Bauch wie kochendes Blei aufsteigt und jedes letzte bisschen Mitleid für diese zwei Gestalten vor mir einfach wegätzt. Ich sehe die leeren Stellen an den Wänden, wo früher die wertvollen Erstausgaben in den Regalen standen, die mein Vater so geliebt hat, und stattdessen starren mich nur schmutzige Ränder und Spinnweben an. Christa und Felix stehen wie zwei Häufchen Elend im Flur und beobachten mich mit einer Mischung aus Misstrauen und nackter Panik, während ich mir mit dem Handrücken eine Träne der Wut aus dem Augenwinkel wische. Was habt ihr nur mit diesem Ort gemacht? frage ich und meine Stimme zittert vor unterdrücktem Zorn, während ich einen vertrockneten Farn in der Ecke berühre, dessen Blätter bei der kleinsten Berührung zu grauem Staub zerfallen. Christa klammert sich an das Geländer der Treppe, ihre Knöchel sind weiß und ihre Stimme klingt brüchig, als sie antwortet, dass sie ja schließlich auch von irgendetwas leben mussten, nachdem das Geld ausgeblieben war. Wir hatten keine Wahl, Jennifer, wir mussten die Rechnungen bezahlen, krächzt sie und ich sehe, wie sie krampfhaft versucht, ihr Zittern zu verbergen, aber ich weiß genau, dass das Geld nicht für Rechnungen, sondern für ihren billigen Wein und Felix Spielschulden draufgegangen ist. Ich drehe mich zu ihnen um und verschränke die Arme vor der Brust, während ich spüre, wie mein Herz in einem harten, unerbittlichen Rhythmus gegen meine Rippen schlägt. Ihr wollt also nicht obdachlos werden, richtig? frage ich und sehe, wie Felix hoffnungsvoll den Kopf hebt, während er sich nervös durch sein fettiges Haar fährt. Ich habe ein Angebot für euch, ein Geschäftsangebot, sage ich und lasse die Worte langsam in der staubigen Luft hängen, damit sie ihre volle Wirkung entfalten können. Ihr dürft bleiben, oben in den zwei kleinen Mansardenzimmern über der Garage, dort wo früher die alten Kisten gelagert wurden, aber es gibt Bedingungen, und die sind nicht verhandelbar. Felix macht den Mund auf, um etwas zu erwidern, wahrscheinlich eine beleidigte Bemerkung über seinen Stolz, aber ich schneide ihm mit einer scharfen Geste das Wort ab. Von heute an seid ihr meine Angestellten, erkläre ich und sehe zu, wie die Farbe aus ihren Gesichtern weicht. Christa, du wirst dieses Haus putzen, jeden einzelnen Quadratmeter, bis man vom Boden essen kann, und du wirst die Wäsche waschen und kochen. Und du, Felix, du wirst den Garten übernehmen, du wirst das Unkraut jäten, die Hecken schneiden und diesen Dschungel da draußen wieder in einen Park verwandeln, so wie er früher war. Das kannst du nicht ernst meinen, das ist moderne Sklavenarbeit! brüllt Felix plötzlich und tritt einen Schritt auf mich zu, aber ich weiche keinen Millimeter zurück und starre ihn einfach nur kalt an, bis er den Blick abwendet und wieder in sich zusammensinkt. Ich kann alles machen, Felix, denn mir gehört dieser Boden, auf dem du gerade stehst, und wenn dir meine Regeln nicht passen, dann kannst du deine sieben Sachen packen und heute Nacht unter der Brücke schlafen, ist das klar? Er presst die Lippen so fest zusammen, dass sie fast verschwinden, aber er nickt schließlich ganz leicht, während Christa leise zu schluchzen beginnt. Ich lasse die beiden einfach im Flur stehen, während sie anfangen, sich gegenseitig die Schuld für ihre Misere zuzuschieben, und ihre hasserfüllten Flüstertöne verfolgen mich, als ich die schwere Tür zum alten Arbeitszimmer meines Vaters aufstoße. Hier drin riecht es noch immer ganz leicht nach seinem alten Tabak und nach Leder, obwohl auch dieser Raum von der Vernachlässigung gezeichnet ist. Ich brauche einen Moment für mich, einen Moment, um die Fassade der harten Geschäftsfrau fallen zu lassen, und streiche mit den Fingern über die massiven Holzregale, die fast leer sind. Mein Herz stolpert plötzlich, als ich an einer bestimmten Stelle hängen bleibe, an einer Holzleiste, die ein kleines Stück weiter hervorsteht als die anderen. Ich erinnere mich, wie mein Vater mir einmal als kleines Kind zugezwinkert hat, als er genau hier etwas versteckt hat, und mein Atem geht flacher, während ich fest gegen die Leiste drücke. Mit einem leisen, fast unhörbaren Klicken springt ein kleiner Spalt im Holz auf und offenbart ein verborgenes Fach, in dem ein einziger, versiegelter Umschlag liegt, auf dem in der vertrauten, schwungvollen Handschrift meines Vaters mein Name steht. Meine Hände zittern so stark, dass ich fast den Umschlag fallen lasse, während ich das Siegel aufbreche und das dicke Papier entfalte. Meine liebe Jennifer, beginnt der Brief, und ich kann fast seine Stimme in meinem Kopf hören, warm und beruhigend, als stünde er direkt hinter mir. Es tut mir leid, dass ich dir diese Last aufbürden musste, aber ich wusste, dass Christas Gier keine Grenzen kennt und dass sie alles versuchen würde, um dich um dein Erbe zu bringen, sobald ich nicht mehr da bin. Ich lese weiter und meine Augen füllen sich mit Tränen, die diesmal nicht aus Wut, sondern aus tiefer Erleichterung fließen, während ich erfahre, dass mein Vater diesen ganzen Albtraum vorausgesehen hat. Er erklärt mir in dem Brief, dass er die Zwangsversteigerung nicht etwa aus Unachtsamkeit zugelassen hat, sondern als einen geplanten Auslöser für einen geheimen Treuhandfonds, den er jahrelang im Verborgenen aufgebaut hatte. Er wollte, dass das Haus in die Brüche geht, damit Christa und Felix sich selbst demaskieren und ihre wahre Natur zeigen, während das restliche Vermögen sicher vor ihrem Zugriff geschützt war. Du bist meine Rettungsinsel, Jennifer, und dieser Fonds wurde genau in dem Moment für dich aktiviert, als sie versuchten, das Haus zu verspielen, schreibt er und ich muss mich am Schreibtisch festhalten, weil meine Knie plötzlich weich wie Wackelpudding werden. Er hat mich nie im Stich gelassen, schießt es mir durch den Kopf, er hat mich die ganze Zeit über beschützt, sogar über sein Grab hinaus, und er hat alles vorbereitet, damit ich heute hier stehen und dieses Haus zurückfordern kann. Ich drücke den Brief fest an meine Brust und schließe die Augen, während ich das Gefühl habe, wie eine riesige Last von meinen Schultern abfällt. Draußen im Flur höre ich wieder das Gezänk von Christa und Felix, die sich jetzt darüber streiten, wer von ihnen beiden mehr arbeiten muss, und ich verspüre ein seltsames Gefühl von Ruhe, das sich in mir ausbreitet. Ich bin nicht mehr das kleine, verstoßene Mädchen mit dem Müllsack in der Hand, ich bin die rechtmäßige Erbin, und ich habe gerade erst angefangen, die Dinge hier wieder in Ordnung zu bringen. Ich stecke den Brief sicher in meine Tasche und streiche mir die Haare aus dem Gesicht, während ich mich im Spiegel über dem Kamin betrachte und eine Frau sehe, die bereit ist, für ihre Vergangenheit und ihre Zukunft zu kämpfen. Dieses Haus wird wieder strahlen, und ich werde dafür sorgen, dass jeder, der es entweiht hat, den Preis dafür bezahlt, Schritt für Schritt und Tag für Tag. Ich atme tief ein, schmecke den Staub und das Alter, aber auch die Hoffnung, die unter all dem Dreck verborgen liegt, und ich weiß genau, dass der Morgen ein ganz neues Kapitel einläuten wird. Aber zuerst werde ich diesen beiden da draußen zeigen, was es bedeutet, wirklich hart zu arbeiten, während ich in der Küche einen Kaffee trinken werde, den Christa mir eigenhändig servieren wird. Es ist ein merkwürdiges Gefühl der Genugtuung, das mich fast erschreckt, aber dann denke ich an die kalte Nacht vor fünf Jahren zurück und mein Herz wird wieder hart wie Stein. Gerechtigkeit ist eben manchmal eine sehr kalte Angelegenheit, und ich bin mehr als bereit, sie zu servieren. Ich verlasse das Arbeitszimmer und meine Schritte klingen jetzt viel sicherer auf dem Parkett, als ich in den Flur zurückkehre, wo die beiden noch immer wie zwei ertappte Diebe herumstehen. Christa, fang in der Küche an, sage ich kühl und sehe, wie sie zusammenzuckt. Und Felix, die Gartenschere liegt wahrscheinlich noch rostig im Schuppen, also sieh zu, dass du sie findest, bevor die Sonne untergeht. Ich beobachte sie noch einen Moment lang, wie sie sich in Bewegung setzen, langsam und widerwillig, und ich weiß, dass das erst der Anfang ihrer langen Reise zurück in die Realität ist. Ich bin zurück, Papa, flüstere ich so leise, dass nur ich es hören kann, und zum ersten Mal seit Jahren fühlt sich dieses Haus wieder ein kleines bisschen wie ein Zuhause an.\nWas zum Teufel schleichen diese beiden Ratten mitten in der Nacht auf dem Dachboden herum? Ich stehe im dunklen Flur und starre nach oben, wo ein schwacher Lichtstreifen unter der schweren Eichentür des Dachbodens hervorquillt. Mein Herz klopft nicht mehr vor Angst, sondern vor einer kalten, fast schon gelangweilten Verachtung, während ich die knarrenden Stufen hinaufsteige, so leise es meine nackten Füße auf dem alten Holz zulassen. Oben angekommen, drücke ich mich tief in die Schatten zwischen den alten Umzugskartons und verstaubten Laken, die wie Gespenster der Vergangenheit von den Balken hängen. Ich sehe Felix, wie er mit einem Stemmeisen an einem alten, massiven Schreibtisch herumfuhrwerkt, den mein Vater früher für seine Korrespondenz genutzt hat. „Mach schneller, Felix, sie könnte jeden Moment aufwachen“, zischt Christa, und ihr Gesicht sieht im fahlen Schein einer Taschenlampe noch hohlwängiger und gieriger aus als sonst. Ich beobachte sie, wie sie wie ein hungriger Geier über seiner Schulter hockt, während er mit einem hässlichen Splittern den falschen Boden des Fachs aufbricht. Ein kleiner Stapel zerknitterter, alter Geldscheine kommt zum Vorschein, und Christa stößt einen erstickten Laut aus, bevor sie mit ihren kralligen Fingern danach greift. „Es sind bestimmt Tausende“, flüstert sie, aber als sie die Scheine zählt, bricht ihr Gesicht zusammen. Es sind gerade einmal dreihundert Euro, ein lächerlicher Restbestand, den mein Vater wohl vor Jahrzehnten dort vergessen hat. Sie streiten sich flüsternd, ziehen an den Scheinen, und in diesem Moment überkommt mich eine Welle der Erkenntnis, die mich fast taumeln lässt. Ich sehe zwei gebrochene, erbärmliche Menschen, die sich gegenseitig für ein paar zerknitterte Scheine zerfleischen, während sie in meinem Haus in den Mansarden hausen müssen. In mir drin macht es plötzlich Klick. Was zur Hölle mache ich hier eigentlich? Will ich wirklich die Aufseherin über dieses Elend sein? Ich trete aus dem Schatten ins helle Licht der Taschenlampe und beide zucken so heftig zusammen, dass Felix das Stemmeisen fallen lässt, das mit einem dumpfen Schlag auf den Dielen landet. „Glaubt ihr wirklich, dass mir in diesem Haus auch nur eine einzige Bewegung entgeht?“, frage ich, und meine Stimme klingt nicht wütend, sondern einfach nur unendlich müde. Christa lässt das Geld fallen, als wären es glühende Kohlen, und fängt sofort an zu stammeln, dass sie doch nur saubermachen wollten, während Felix einfach nur den Kopf senkt wie ein geschlagener Hund. Ich starre sie an und sehe zum ersten Mal nicht mehr die Monster, die mich vor fünf Jahren verstoßen haben, sondern nur noch zwei Parasiten, die ohne ihre Lügen absolut nichts besitzen. „Behaltet das Geld“, sage ich und unterbreche Christas nächsten verzweifelten Erklärungsversuch. „Behaltet die dreihundert Euro, steckt sie ein und dann verschwindet.“ Felix sieht mich ungläubig an. „Was meinst du damit, Jennifer?“ Ich mache eine ausladende Geste, die den ganzen Dachboden umfasst. „Ich meine damit, dass ihr genau eine Stunde Zeit habt, um eure Sachen zu packen und dieses Grundstück zu verlassen. Für immer.“ Christa fängt an zu weinen, ein schrilles, falsches Schluchzen, das mir früher das Herz gebrochen hätte, mich jetzt aber nur noch anwidert. „Aber wo sollen wir denn hin? Es ist mitten in der Nacht!“, jammert sie, doch ich bleibe hart. „Das ist mir völlig egal. Ihr habt versucht, mich zu bestehlen, obwohl ich euch ein Dach über dem Kopf gegeben habe. Aber wisst ihr was? Das ist gar nicht der Grund. Der wahre Grund ist, dass ich euch nicht mehr in meinem Leben haben will. Euch hier als meine Diener zu halten, macht mich nur genauso bitter und klein wie euch beide es seid. Und das bin ich nicht.“ Ich drehe mich um und gehe zur Tür, ohne noch einmal zurückzublicken. „Eine Stunde, Felix. Wenn der Zeiger der Uhr ganz oben ist und ihr noch hier seid, rufe ich die Polizei wegen Einbruchs.“ Ich gehe die Treppe hinunter und fühle mich mit jeder Stufe leichter, als würde ich eine schwere, rostige Rüstung ablegen, die ich viel zu lange getragen habe. Unten in der Küche mache ich mir einen Tee und höre, wie sie oben hektisch herumrennen, wie Möbel gerückt werden und Koffer über den Boden schleifen. Es gibt kein Geschrei mehr, keine Vorwürfe, nur noch die überstürzte Flucht zweier Menschen, die wissen, dass ihre Zeit abgelaufen ist. Genau neunundfünfzig Minuten später höre ich, wie die Haustür ins Schloss fällt, nicht laut und protestierend wie bei meiner Ankunft, sondern fast schon entschuldigend leise. Ich trete ans Fenster und beobachte im fahlen Licht der Straßenlaterne, wie der alte, verbeulte Wagen von Felix vom Hof rollt, bis die Rücklichter in der Ferne verschwinden. Plötzlich ist es totenstill im Haus. Kein Atmen außer meinem eigenen, kein hasserfülltes Flüstern, kein Geruch nach billigem Wein. Ich öffne die Terrassentür und trete hinaus in den Garten, wo die kühle Nachtluft meine erhitzte Haut streichelt. Ich atme tief ein, und zum ersten Mal seit Jahren schmeckt die Luft nicht nach Staub oder Bitterkeit, sondern einfach nur nach frischem Gras und nasser Erde. Ich sehe mich um und sehe nicht mehr die vernachlässigten Hecken oder das Unkraut, sondern das Potenzial dieses Ortes. Mein Vater hat mir dieses Haus nicht hinterlassen, damit ich darin Rache nehme, sondern damit ich darin lebe. Ich setze mich auf die Stufen der Terrasse und spüre das kühle Stein unter mir. In meinem Kopf ist es endlich ruhig geworden. Die Wut ist weg, der Hass ist weg, und what übrig bleibt, ist eine seltsame, friedliche Leere, die darauf wartet, mit neuen Erinnerungen gefüllt zu werden. Dieses Haus ist kein Denkmal für den Schmerz mehr, den sie mir zugefügt haben. Es ist wieder mein Zuhause. Ich schließe die Augen und höre das ferne Rauschen der Blätter im Wind, und ich weiß, dass ich morgen früh aufstehen werde, um die Fenster weit aufzureißen und den ganzen Schmutz der letzten Jahre endgültig wegzuspülen. Ich habe gewonnen, nicht weil ich sie gedemütigt habe, sondern weil ich die Kraft hatte, sie gehen zu lassen. Ein Lächeln stiehlt sich auf mein Gesicht, während ich in die Dunkelheit starre, und ich fühle mich so frei wie noch nie in meinem ganzen Leben. Danke, Papa, flüstere ich in die Nacht hinaus, und ich bin mir sicher, dass der Wind die Worte genau dorthin trägt, wo sie hingehören.",
+          "Storage Bucket": "n8nt",
+          "Videos Folder Path": "german/family-drama/videos",
+          "Project Name": "homecoming-justice-in-the-torn-rose-garden",
+          "Overlay Video": "german/family-drama",
+          "Video Render API": "https://tasil66-myspace.hf.space",
+          "Video Render API key": "Tahabou",
+          "Id": "3",
+          "Storage Bucket PUBLIC URL": "https://n8nt.mos.us-south-1.sufybkt.com/"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-21T11:11:45.284Z",
+      "createdAt": "2025-12-21T11:11:45.284Z",
+      "role": "workflow:owner",
+      "workflowId": "ZLTAlAT3XEWPANef",
+      "projectId": "Sz2vPJqZDAwEzZJp"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-12-23T10:03:53.605Z",
+  "versionId": "1297f2d4-87c1-4b8c-869b-061403bc0676"
+}
