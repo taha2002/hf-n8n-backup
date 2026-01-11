@@ -1,9 +1,9 @@
 {
   "active": true,
   "activeVersion": {
-    "updatedAt": "2025-12-24T08:51:07.274Z",
-    "createdAt": "2025-12-24T08:30:02.565Z",
-    "versionId": "c0d42cc7-64c1-46ec-9e44-144ec69e7c73",
+    "updatedAt": "2026-01-11T19:14:52.680Z",
+    "createdAt": "2026-01-11T19:14:44.754Z",
+    "versionId": "67a79fa9-0e87-4010-8d1b-81ac534419da",
     "workflowId": "mKyncW0fgoASQT11",
     "nodes": [
       {
@@ -576,7 +576,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Assuming input is a single item with json like your data:\n// { \"Total Chunk Number\": \"6\", \"Voiceover Chunk Download URL\": \"http://...\" }\n// If your input is an array, access items[0].json\nconst data = items[0].json; // Or adjust if multiple items\nconst totalChunks = parseInt(data[\"Total Chunk Number\"], 10);\nconst basePath = data[\"Voiceover Chunk Download URL\"];\n// Generate input objects: [{ file_url: basePath + \"audio-chunk-1.mp3\", options: [{option: \"-f\", argument: \"mp3\"}] }, ...]\nconst inputs = [];\nfor (let i = 1; i <= totalChunks; i++) {\n  inputs.push({\n    file_url: `${basePath}audio-chunk-${i}.mp3`,\n    options: [{ option: \"-f\", argument: \"mp3\" }]\n  });\n}\n// Build the filter_complex string for audio concatenation: [0:a][1:a]...concat=n=total:v=0:a=1 [a]\nconst filterInputs = inputs.map((_, index) => `[${index}:a]`).join('');\nconst concatFilter = `${filterInputs}concat=n=${totalChunks}:v=0:a=1 [a]`;\n// Filters array\nconst filters = [{ filter: concatFilter }];\n// Outputs: map to [a], encode to MP3\nconst outputs = [\n  {\n    options: [\n      { option: \"-map\", argument: \"[a]\" },\n      { option: \"-c:a\", argument: \"libmp3lame\" },\n      { option: \"-b:a\", argument: \"128k\" }\n    ]\n  }\n];\n// Optional: Add global options like -y to overwrite, -strict -2, and increase probesize/analyzeduration\nconst globalOptions = [\n  { option: \"-y\" },\n  { option: \"-strict\", argument: \"-2\" },\n  { option: \"-probesize\", argument: \"50000000\" },\n  { option: \"-analyzeduration\", argument: \"100000000\" }\n];\n// Return the structured payload for /v1/ffmpeg/compose\nreturn [\n  {\n    json: {\n      inputs: inputs,\n      filters: filters,\n      outputs: outputs,\n      global_options: globalOptions\n    }\n  }\n];"
+          "jsCode": "// Assuming input is a single item with json like your data:\n// { \"Total Chunk Number\": \"6\", \"Voiceover Chunk Download URL\": \"http://...\" }\n// If your input is an array, access items[0].json\nconst data = items[0].json; // Or adjust if multiple items\nconst totalChunks = parseInt(data[\"Total Chunk Number\"], 10);\nconst basePath = data[\"Voiceover Chunk Download URL\"];\n// Generate input objects: [{ file_url: basePath + \"audio-chunk-1.mp3\", options: [{option: \"-f\", argument: \"mp3\"}] }, ...]\nconst inputs = [];\nfor (let i = 1; i <= totalChunks; i++) {\n  inputs.push({\n    file_url: `${basePath}audio-chunk-${i}.wav`,\n    options: [{ option: \"-f\", argument: \"mp3\" }]\n  });\n}\n// Build the filter_complex string for audio concatenation: [0:a][1:a]...concat=n=total:v=0:a=1 [a]\nconst filterInputs = inputs.map((_, index) => `[${index}:a]`).join('');\nconst concatFilter = `${filterInputs}concat=n=${totalChunks}:v=0:a=1 [a]`;\n// Filters array\nconst filters = [{ filter: concatFilter }];\n// Outputs: map to [a], encode to MP3\nconst outputs = [\n  {\n    options: [\n      { option: \"-map\", argument: \"[a]\" },\n      { option: \"-c:a\", argument: \"libmp3lame\" },\n      { option: \"-b:a\", argument: \"128k\" }\n    ]\n  }\n];\n// Optional: Add global options like -y to overwrite, -strict -2, and increase probesize/analyzeduration\nconst globalOptions = [\n  { option: \"-y\" },\n  { option: \"-strict\", argument: \"-2\" },\n  { option: \"-probesize\", argument: \"50000000\" },\n  { option: \"-analyzeduration\", argument: \"100000000\" }\n];\n// Return the structured payload for /v1/ffmpeg/compose\nreturn [\n  {\n    json: {\n      inputs: inputs,\n      filters: filters,\n      outputs: outputs,\n      global_options: globalOptions\n    }\n  }\n];"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1640,10 +1640,10 @@
       }
     },
     "authors": "taha bouras",
-    "name": "Version c0d42cc7",
+    "name": "Version 67a79fa9",
     "description": ""
   },
-  "activeVersionId": "c0d42cc7-64c1-46ec-9e44-144ec69e7c73",
+  "activeVersionId": "67a79fa9-0e87-4010-8d1b-81ac534419da",
   "connections": {
     "trigger": {
       "main": [
@@ -2702,7 +2702,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Assuming input is a single item with json like your data:\n// { \"Total Chunk Number\": \"6\", \"Voiceover Chunk Download URL\": \"http://...\" }\n// If your input is an array, access items[0].json\nconst data = items[0].json; // Or adjust if multiple items\nconst totalChunks = parseInt(data[\"Total Chunk Number\"], 10);\nconst basePath = data[\"Voiceover Chunk Download URL\"];\n// Generate input objects: [{ file_url: basePath + \"audio-chunk-1.mp3\", options: [{option: \"-f\", argument: \"mp3\"}] }, ...]\nconst inputs = [];\nfor (let i = 1; i <= totalChunks; i++) {\n  inputs.push({\n    file_url: `${basePath}audio-chunk-${i}.mp3`,\n    options: [{ option: \"-f\", argument: \"mp3\" }]\n  });\n}\n// Build the filter_complex string for audio concatenation: [0:a][1:a]...concat=n=total:v=0:a=1 [a]\nconst filterInputs = inputs.map((_, index) => `[${index}:a]`).join('');\nconst concatFilter = `${filterInputs}concat=n=${totalChunks}:v=0:a=1 [a]`;\n// Filters array\nconst filters = [{ filter: concatFilter }];\n// Outputs: map to [a], encode to MP3\nconst outputs = [\n  {\n    options: [\n      { option: \"-map\", argument: \"[a]\" },\n      { option: \"-c:a\", argument: \"libmp3lame\" },\n      { option: \"-b:a\", argument: \"128k\" }\n    ]\n  }\n];\n// Optional: Add global options like -y to overwrite, -strict -2, and increase probesize/analyzeduration\nconst globalOptions = [\n  { option: \"-y\" },\n  { option: \"-strict\", argument: \"-2\" },\n  { option: \"-probesize\", argument: \"50000000\" },\n  { option: \"-analyzeduration\", argument: \"100000000\" }\n];\n// Return the structured payload for /v1/ffmpeg/compose\nreturn [\n  {\n    json: {\n      inputs: inputs,\n      filters: filters,\n      outputs: outputs,\n      global_options: globalOptions\n    }\n  }\n];"
+        "jsCode": "// Assuming input is a single item with json like your data:\n// { \"Total Chunk Number\": \"6\", \"Voiceover Chunk Download URL\": \"http://...\" }\n// If your input is an array, access items[0].json\nconst data = items[0].json; // Or adjust if multiple items\nconst totalChunks = parseInt(data[\"Total Chunk Number\"], 10);\nconst basePath = data[\"Voiceover Chunk Download URL\"];\n// Generate input objects: [{ file_url: basePath + \"audio-chunk-1.mp3\", options: [{option: \"-f\", argument: \"mp3\"}] }, ...]\nconst inputs = [];\nfor (let i = 1; i <= totalChunks; i++) {\n  inputs.push({\n    file_url: `${basePath}audio-chunk-${i}.wav`,\n    options: [{ option: \"-f\", argument: \"mp3\" }]\n  });\n}\n// Build the filter_complex string for audio concatenation: [0:a][1:a]...concat=n=total:v=0:a=1 [a]\nconst filterInputs = inputs.map((_, index) => `[${index}:a]`).join('');\nconst concatFilter = `${filterInputs}concat=n=${totalChunks}:v=0:a=1 [a]`;\n// Filters array\nconst filters = [{ filter: concatFilter }];\n// Outputs: map to [a], encode to MP3\nconst outputs = [\n  {\n    options: [\n      { option: \"-map\", argument: \"[a]\" },\n      { option: \"-c:a\", argument: \"libmp3lame\" },\n      { option: \"-b:a\", argument: \"128k\" }\n    ]\n  }\n];\n// Optional: Add global options like -y to overwrite, -strict -2, and increase probesize/analyzeduration\nconst globalOptions = [\n  { option: \"-y\" },\n  { option: \"-strict\", argument: \"-2\" },\n  { option: \"-probesize\", argument: \"50000000\" },\n  { option: \"-analyzeduration\", argument: \"100000000\" }\n];\n// Return the structured payload for /v1/ffmpeg/compose\nreturn [\n  {\n    json: {\n      inputs: inputs,\n      filters: filters,\n      outputs: outputs,\n      global_options: globalOptions\n    }\n  }\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3323,6 +3323,6 @@
   "staticData": null,
   "tags": [],
   "triggerCount": 0,
-  "updatedAt": "2025-12-24T08:30:02.458Z",
-  "versionId": "c0d42cc7-64c1-46ec-9e44-144ec69e7c73"
+  "updatedAt": "2026-01-11T19:14:44.646Z",
+  "versionId": "67a79fa9-0e87-4010-8d1b-81ac534419da"
 }
