@@ -1,9 +1,9 @@
 {
   "active": true,
   "activeVersion": {
-    "updatedAt": "2025-12-22T12:09:48.518Z",
-    "createdAt": "2025-12-22T12:06:58.126Z",
-    "versionId": "08f21bb2-c1d3-4652-bcc8-c947de03b1f0",
+    "updatedAt": "2026-01-11T18:05:50.545Z",
+    "createdAt": "2026-01-11T17:56:36.334Z",
+    "versionId": "575c4bf4-5521-4e05-ae9d-fb986e70fadf",
     "workflowId": "2D0waGOdkFP85jAg",
     "nodes": [
       {
@@ -155,14 +155,14 @@
         "parameters": {
           "operation": "upload",
           "bucketName": "={{ $('trigger').first().json['Storage Bucket'] }}",
-          "fileName": "={{ $('trigger').first().json['Videos Folder Path'] }}/{{ $('trigger').first().json['Project Name'] }}/voiceover/audio-chunk-{{ $('trigger').first().json['Chunk Number'] }}.mp3",
+          "fileName": "={{ $('trigger').first().json['Videos Folder Path'] }}/{{ $('trigger').first().json['Project Name'] }}/voiceover/audio-chunk-{{ $('trigger').first().json['Chunk Number'] }}.wav",
           "additionalFields": {}
         },
         "type": "n8n-nodes-base.s3",
         "typeVersion": 1,
         "position": [
-          1472,
-          240
+          1536,
+          256
         ],
         "id": "a9b2ebb7-80dc-4c2b-942b-ba7bc561ade2",
         "name": "Upload Chunk to Project",
@@ -176,7 +176,7 @@
       {
         "parameters": {
           "content": "## Generate Voiceover Chunk",
-          "height": 864,
+          "height": 960,
           "width": 1264,
           "color": 6
         },
@@ -228,8 +228,8 @@
         "type": "n8n-nodes-base.nocoDb",
         "typeVersion": 3,
         "position": [
-          1696,
-          240
+          1760,
+          256
         ],
         "id": "5831ff6f-cf5b-4a5e-8ee9-04bb90f0bd69",
         "name": "Change Worker Status to \"Ready\"",
@@ -284,11 +284,103 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          688,
-          368
+          672,
+          272
         ],
         "id": "f7eeec9d-aa07-42c0-8f9d-97da0eff66df",
         "name": "Generate Voiceover w/ \"GenAIPro.vn\"2"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key={{ $json.key }}",
+          "sendBody": true,
+          "contentType": "raw",
+          "rawContentType": "application/json",
+          "body": "={\n    \"contents\": [\n      {\n        \"role\": \"user\",\n        \"parts\": [\n          {\n            \"text\": {{ JSON.stringify(\"Read aloud in a warm and friendly tone:\\n\" + $json['Chunk Script']) }}\n          }\n        ]\n      }\n    ],\n    \"generationConfig\": {\n      \"responseModalities\": [\"audio\"],\n      \"temperature\": 1,\n      \"speech_config\": {\n        \"voice_config\": {\n          \"prebuilt_voice_config\": {\n            \"voice_name\": \"Zephyr\"\n          }\n        }\n      }\n    }\n  }",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          656,
+          528
+        ],
+        "id": "a63c7430-4a3f-4513-9207-a68574ef0c22",
+        "name": "HTTP Request",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// List of API keys\nconst keys = [\n  \"AIzaSyCoLB2k-NgVBEoc8kNOKd4kRc6PcApu1yM\",\n  \"AIzaSyCbROdy5OR4F1pT6anpxbagyABn2vbeqHE\",\n  //\"AIzaSyA5Hgm8Y1Zc40U6XyekCki573ABDNftchc\",\n  \"AIzaSyBiI-I_RAlsCPn9sfe_fN2IW956vBAuQ7o\",\n  // \"AIzaSyAk307yGE_SQCZo8UhwVeIRCG36eLbqexc\"\n];\n\n// Loop over input items and assign a random key to each one\nfor (const item of $input.all()) {\n  const randomIndex = Math.floor(Math.random() * keys.length);\n  item.json.key = keys[randomIndex];\n}\n\nreturn $input.all();\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          432,
+          528
+        ],
+        "id": "ebd8504e-cc2c-4431-aae2-86176157e2b7",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "8ef31348-5b92-493d-8e73-a58b29472cfb",
+                "leftValue": "={{ $json.candidates[0].content.parts[0].inlineData.data }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          880,
+          528
+        ],
+        "id": "d776df2b-0247-4fcf-b14a-22a0d0004a2c",
+        "name": "If"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          1024,
+          640
+        ],
+        "id": "e8bc98c9-6f6f-41e1-b6ad-c96d87969ad7",
+        "name": "Wait",
+        "webhookId": "8953f05d-4007-45b2-a867-726cf909e12f"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Function to create WAV header for PCM data\nfunction createWavHeader(dataLength, channels = 1, sampleRate = 24000, bitsPerSample = 16) {\n  const header = new ArrayBuffer(44);\n  const view = new DataView(header);\n  \n  // RIFF header\n  view.setUint32(0, 0x46464952, true); // \"RIFF\"\n  view.setUint32(4, 36 + dataLength, true); // File size - 8\n  view.setUint32(8, 0x45564157, true); // \"WAVE\"\n  \n  // Format chunk\n  view.setUint32(12, 0x20746d66, true); // \"fmt \"\n  view.setUint32(16, 16, true); // Format chunk size\n  view.setUint16(20, 1, true); // Audio format (PCM)\n  view.setUint16(22, channels, true); // Number of channels\n  view.setUint32(24, sampleRate, true); // Sample rate\n  view.setUint32(28, sampleRate * channels * (bitsPerSample / 8), true); // Byte rate\n  view.setUint16(32, channels * (bitsPerSample / 8), true); // Block align\n  view.setUint16(34, bitsPerSample, true); // Bits per sample\n  \n  // Data chunk\n  view.setUint32(36, 0x61746164, true); // \"data\"\n  view.setUint32(40, dataLength, true); // Data size\n  \n  return new Uint8Array(header);\n}\n\n// Function to combine WAV header with audio data\nfunction createWavFile(pcmData, channels = 1, sampleRate = 24000, bitsPerSample = 16) {\n  const header = createWavHeader(pcmData.length, channels, sampleRate, bitsPerSample);\n  const wavFile = new Uint8Array(header.length + pcmData.length);\n  \n  wavFile.set(header, 0);\n  wavFile.set(pcmData, header.length);\n  \n  return wavFile;\n}\n\n\nreturn $input.all().map(item => {\n  try {\n    const inputData = item.json;\n\n    // Try to get base64 audio data from multiple possible fields\n    let base64Data;\n    if (inputData.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {\n      base64Data = inputData.candidates[0].content.parts[0].inlineData.data;\n    } else if (inputData.audio) {\n      base64Data = inputData.audio;\n    } else if (inputData.data) {\n      base64Data = inputData.data;\n    } else {\n      throw new Error('Could not find base64 audio data in input');\n    }\n\n    // Convert to buffer\n    const audioBuffer = Buffer.from(base64Data, 'base64');\n\n    // Create WAV file\n    const wavData = createWavFile(new Uint8Array(audioBuffer));\n\n    // Convert WAV to base64 for n8n\n    const wavBase64 = Buffer.from(wavData).toString('base64');\n\n    return {\n      json: {\n        success: true,\n        fileName: inputData.responseId || 'audio',\n        audioData: wavBase64,\n        originalSize: audioBuffer.length,\n        wavSize: wavData.length,\n        mimeType: 'audio/wav'\n      },\n      binary: {\n        data: {\n          data: wavBase64,\n          mimeType: 'audio/wav',\n          fileName: (inputData.responseId || 'audio') + '.wav'\n        }\n      }\n    };\n\n  } catch (error) {\n    return {\n      json: {\n        success: false,\n        error: error.message,\n        inputStructure: Object.keys(item.json)\n      }\n    };\n  }\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1136,
+          512
+        ],
+        "id": "006647e8-e09e-4a89-9f90-df74f7f01ae8",
+        "name": "Code in JavaScript2"
       }
     ],
     "connections": {
@@ -296,7 +388,7 @@
         "main": [
           [
             {
-              "node": "Generate Voiceover w/ \"GenAIPro.vn\"2",
+              "node": "Code in JavaScript",
               "type": "main",
               "index": 0
             }
@@ -380,19 +472,88 @@
             }
           ]
         ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript2",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript2": {
+        "main": [
+          [
+            {
+              "node": "Upload Chunk to Project",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "taha bouras",
-    "name": "Version 08f21bb2",
+    "name": "Version 575c4bf4",
     "description": ""
   },
-  "activeVersionId": "08f21bb2-c1d3-4652-bcc8-c947de03b1f0",
+  "activeVersionId": "575c4bf4-5521-4e05-ae9d-fb986e70fadf",
   "connections": {
     "trigger": {
       "main": [
         [
           {
-            "node": "Generate Voiceover w/ \"GenAIPro.vn\"2",
+            "node": "Code in JavaScript",
             "type": "main",
             "index": 0
           }
@@ -476,6 +637,75 @@
           }
         ]
       ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Upload Chunk to Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "createdAt": "2025-12-21T11:12:44.649Z",
@@ -484,7 +714,7 @@
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "name": "Voiceover Chunk Workflow",
+  "name": "voice",
   "nodes": [
     {
       "parameters": {
@@ -635,14 +865,14 @@
       "parameters": {
         "operation": "upload",
         "bucketName": "={{ $('trigger').first().json['Storage Bucket'] }}",
-        "fileName": "={{ $('trigger').first().json['Videos Folder Path'] }}/{{ $('trigger').first().json['Project Name'] }}/voiceover/audio-chunk-{{ $('trigger').first().json['Chunk Number'] }}.mp3",
+        "fileName": "={{ $('trigger').first().json['Videos Folder Path'] }}/{{ $('trigger').first().json['Project Name'] }}/voiceover/audio-chunk-{{ $('trigger').first().json['Chunk Number'] }}.wav",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.s3",
       "typeVersion": 1,
       "position": [
-        1472,
-        240
+        1536,
+        256
       ],
       "id": "a9b2ebb7-80dc-4c2b-942b-ba7bc561ade2",
       "name": "Upload Chunk to Project",
@@ -656,7 +886,7 @@
     {
       "parameters": {
         "content": "## Generate Voiceover Chunk",
-        "height": 864,
+        "height": 960,
         "width": 1264,
         "color": 6
       },
@@ -708,8 +938,8 @@
       "type": "n8n-nodes-base.nocoDb",
       "typeVersion": 3,
       "position": [
-        1696,
-        240
+        1760,
+        256
       ],
       "id": "5831ff6f-cf5b-4a5e-8ee9-04bb90f0bd69",
       "name": "Change Worker Status to \"Ready\"",
@@ -764,11 +994,103 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        688,
-        368
+        672,
+        272
       ],
       "id": "f7eeec9d-aa07-42c0-8f9d-97da0eff66df",
       "name": "Generate Voiceover w/ \"GenAIPro.vn\"2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key={{ $json.key }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n    \"contents\": [\n      {\n        \"role\": \"user\",\n        \"parts\": [\n          {\n            \"text\": {{ JSON.stringify(\"Read aloud in a warm and friendly tone:\\n\" + $json['Chunk Script']) }}\n          }\n        ]\n      }\n    ],\n    \"generationConfig\": {\n      \"responseModalities\": [\"audio\"],\n      \"temperature\": 1,\n      \"speech_config\": {\n        \"voice_config\": {\n          \"prebuilt_voice_config\": {\n            \"voice_name\": \"Zephyr\"\n          }\n        }\n      }\n    }\n  }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        656,
+        528
+      ],
+      "id": "a63c7430-4a3f-4513-9207-a68574ef0c22",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// List of API keys\nconst keys = [\n  \"AIzaSyCoLB2k-NgVBEoc8kNOKd4kRc6PcApu1yM\",\n  \"AIzaSyCbROdy5OR4F1pT6anpxbagyABn2vbeqHE\",\n  //\"AIzaSyA5Hgm8Y1Zc40U6XyekCki573ABDNftchc\",\n  \"AIzaSyBiI-I_RAlsCPn9sfe_fN2IW956vBAuQ7o\",\n  // \"AIzaSyAk307yGE_SQCZo8UhwVeIRCG36eLbqexc\"\n];\n\n// Loop over input items and assign a random key to each one\nfor (const item of $input.all()) {\n  const randomIndex = Math.floor(Math.random() * keys.length);\n  item.json.key = keys[randomIndex];\n}\n\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        528
+      ],
+      "id": "ebd8504e-cc2c-4431-aae2-86176157e2b7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8ef31348-5b92-493d-8e73-a58b29472cfb",
+              "leftValue": "={{ $json.candidates[0].content.parts[0].inlineData.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        880,
+        528
+      ],
+      "id": "d776df2b-0247-4fcf-b14a-22a0d0004a2c",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1024,
+        640
+      ],
+      "id": "e8bc98c9-6f6f-41e1-b6ad-c96d87969ad7",
+      "name": "Wait",
+      "webhookId": "8953f05d-4007-45b2-a867-726cf909e12f"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function to create WAV header for PCM data\nfunction createWavHeader(dataLength, channels = 1, sampleRate = 24000, bitsPerSample = 16) {\n  const header = new ArrayBuffer(44);\n  const view = new DataView(header);\n  \n  // RIFF header\n  view.setUint32(0, 0x46464952, true); // \"RIFF\"\n  view.setUint32(4, 36 + dataLength, true); // File size - 8\n  view.setUint32(8, 0x45564157, true); // \"WAVE\"\n  \n  // Format chunk\n  view.setUint32(12, 0x20746d66, true); // \"fmt \"\n  view.setUint32(16, 16, true); // Format chunk size\n  view.setUint16(20, 1, true); // Audio format (PCM)\n  view.setUint16(22, channels, true); // Number of channels\n  view.setUint32(24, sampleRate, true); // Sample rate\n  view.setUint32(28, sampleRate * channels * (bitsPerSample / 8), true); // Byte rate\n  view.setUint16(32, channels * (bitsPerSample / 8), true); // Block align\n  view.setUint16(34, bitsPerSample, true); // Bits per sample\n  \n  // Data chunk\n  view.setUint32(36, 0x61746164, true); // \"data\"\n  view.setUint32(40, dataLength, true); // Data size\n  \n  return new Uint8Array(header);\n}\n\n// Function to combine WAV header with audio data\nfunction createWavFile(pcmData, channels = 1, sampleRate = 24000, bitsPerSample = 16) {\n  const header = createWavHeader(pcmData.length, channels, sampleRate, bitsPerSample);\n  const wavFile = new Uint8Array(header.length + pcmData.length);\n  \n  wavFile.set(header, 0);\n  wavFile.set(pcmData, header.length);\n  \n  return wavFile;\n}\n\n\nreturn $input.all().map(item => {\n  try {\n    const inputData = item.json;\n\n    // Try to get base64 audio data from multiple possible fields\n    let base64Data;\n    if (inputData.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {\n      base64Data = inputData.candidates[0].content.parts[0].inlineData.data;\n    } else if (inputData.audio) {\n      base64Data = inputData.audio;\n    } else if (inputData.data) {\n      base64Data = inputData.data;\n    } else {\n      throw new Error('Could not find base64 audio data in input');\n    }\n\n    // Convert to buffer\n    const audioBuffer = Buffer.from(base64Data, 'base64');\n\n    // Create WAV file\n    const wavData = createWavFile(new Uint8Array(audioBuffer));\n\n    // Convert WAV to base64 for n8n\n    const wavBase64 = Buffer.from(wavData).toString('base64');\n\n    return {\n      json: {\n        success: true,\n        fileName: inputData.responseId || 'audio',\n        audioData: wavBase64,\n        originalSize: audioBuffer.length,\n        wavSize: wavData.length,\n        mimeType: 'audio/wav'\n      },\n      binary: {\n        data: {\n          data: wavBase64,\n          mimeType: 'audio/wav',\n          fileName: (inputData.responseId || 'audio') + '.wav'\n        }\n      }\n    };\n\n  } catch (error) {\n    return {\n      json: {\n        success: false,\n        error: error.message,\n        inputStructure: Object.keys(item.json)\n      }\n    };\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        512
+      ],
+      "id": "006647e8-e09e-4a89-9f90-df74f7f01ae8",
+      "name": "Code in JavaScript2"
     }
   ],
   "pinData": {
@@ -805,6 +1127,6 @@
   "staticData": null,
   "tags": [],
   "triggerCount": 0,
-  "updatedAt": "2025-12-22T12:06:58.020Z",
-  "versionId": "08f21bb2-c1d3-4652-bcc8-c947de03b1f0"
+  "updatedAt": "2026-01-11T18:48:50.286Z",
+  "versionId": "575c4bf4-5521-4e05-ae9d-fb986e70fadf"
 }
